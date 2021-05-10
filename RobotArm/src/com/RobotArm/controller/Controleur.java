@@ -1,7 +1,18 @@
-import lejos.hardware.motor.Motor;
-import lejos.hardware.sensor;
+package com.RobotArm.controller;
 
-class Controleur implements IExecuteur, IPilote
+import lejos.hardware.motor.Motor;
+import lejos.hardware.*;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+
+import com.RobotArm.persistance.*;
+import com.RobotArm.business.*;
+import com.RobotArm.interfaces.*;
+
+public class Controleur implements IExecuteur, IPilote
 {
 	HashMap<String, Gamme> listeGammes;
 	Gamme gammeDefaut;
@@ -26,33 +37,33 @@ class Controleur implements IExecuteur, IPilote
 	
 	private void initRobot()
 	{
-		int vitesseMoteur = persistance.getConfig("vitesseMoteur");
-		int accelerationMoteur = persistance.getConfig("accelerationMoteur");
-		int rendementMotA = persistance.getConfig("rendementMotA");
-		int rendementMotB = persistance.getConfig("rendementMotB");
-		int rendementMotC = persistance.getConfig("rendementMotC");
+		int vitesseMoteur = Integer.parseInt(persistance.getConfig("vitesseMoteur").get("vitMot"));
+		int accelerationMoteur = Integer.parseInt(persistance.getConfig("accelerationMoteur").get("accMot"));
+		int rendementMotA = Integer.parseInt(persistance.getConfig("rendementMotA").get("motA"));
+		int rendementMotB = Integer.parseInt(persistance.getConfig("rendementMotB").get("motB"));
+		int rendementMotC = Integer.parseInt(persistance.getConfig("rendementMotC").get("motC"));
 		int val;
 
-		lejos.Motor.A.setSpeed(vitesseMoteur);
-		lejos.Motor.B.setSpeed(vitesseMoteur);
-		lejos.Motor.C.setSpeed(vitesseMoteur);
+		Motor.A.setSpeed(vitesseMoteur);
+		Motor.B.setSpeed(vitesseMoteur);
+		Motor.C.setSpeed(vitesseMoteur);
 		
-		lejos.Motor.A.setAcceleration(rendementMotA);
-		lejos.Motor.B.setAcceleration(rendementMotB);
-		lejos.Motor.C.setAcceleration(rendementMotC);
+		Motor.A.setAcceleration(rendementMotA);
+		Motor.B.setAcceleration(rendementMotB);
+		Motor.C.setAcceleration(rendementMotC);
 		
 		initPositionMoteurs(); // Initialise les moteurs pour les tourner en butée.
 	}
 	
 	
-	private void initGamme()
+	private void initGamme() throws SQLException
 	{
 		this.listeGammes = persistance.recupererGammes();
 		this.gammeDefaut = persistance.recupererGammeDefaut();
 	}
 	
 	
-	public void sauverRapport(String r)
+	public void sauverRapport(String r) throws SQLException
 	{
 		persistance.sauverLog(r);
 	}
@@ -89,7 +100,7 @@ class Controleur implements IExecuteur, IPilote
 	}
 
 
-	public ArrayList<String> filtrerLog(Date date)
+	public ArrayList<String> filtrerLog(Date date) throws SQLException
 	{
 		ArrayList<String> rapports = persistance.recupererLogs();
 		//Filtrage du tableau et expulsion des éléments dont la date est antérieure au paramètre transmis.
@@ -97,7 +108,7 @@ class Controleur implements IExecuteur, IPilote
 	}
 
 
-	public notifierMessage(String msg)
+	public void notifierMessage(String msg)
 	{
 		JSONObject json = new JSONObject(msg);
 		switch(json.getString("cmd"))
@@ -116,7 +127,7 @@ class Controleur implements IExecuteur, IPilote
 				catch(Exception e)
 				{
 					pilotage.envoyerMessage("La gamme n'a pas pu être créée.");
-					sauverRapport(e.message);
+					sauverRapport(e.getMessage());
 				}
 				break;
 			case "modifierGamme":
@@ -133,7 +144,7 @@ class Controleur implements IExecuteur, IPilote
 				catch(Exception e)
 				{
 					pilotage.envoyerMessage("La gamme n'a pas pu être modifiée.");
-					sauverRapport(e.message);
+					sauverRapport(e.getMessage());
 				}
 				break;
 			case "supprimerGamme":
@@ -150,7 +161,7 @@ class Controleur implements IExecuteur, IPilote
 				catch(Exception e)
 				{
 					pilotage.envoyerMessage("La gamme n'a pas pu être supprimée.");
-					sauverRapport(e.message);
+					sauverRapport(e.getMessage());
 				}			
 				break;
 			case "creerCompte":
@@ -168,14 +179,14 @@ class Controleur implements IExecuteur, IPilote
 				catch(Exception e)
 				{
 					pilotage.envoyerMessage("Le compte n'a pas pu être créé.");
-					sauverRapport(e.message);
+					sauverRapport(e.getMessage());
 				}			
 				break;
 			case "supprimerCompte":
 				persistance.supprimerCompte(json.getString("login"));
 				break;
 			case "modeAutonome":
-				modeFonctionnement = new modeAutonome();
+				modeFonctionnement = new ModeAutonome();
 				break;
 			case "declencherPanne":
 				declencherPanne();
@@ -186,7 +197,7 @@ class Controleur implements IExecuteur, IPilote
 			case "recupererLogs":
 				ArrayList<String> rapports;
 				if(json.getString("date") != null)
-					rapports = filtrerLog(new Date(json.getString("date"));
+					rapports = filtrerLog(new Date(json.getString("date")));
 				else
 					rapports = persistance.recupererLogs();		
 				pilotage.afficherHistorique(rapports);
@@ -195,7 +206,7 @@ class Controleur implements IExecuteur, IPilote
 	}
 
 
-	public déclencherPanne()
+	public void declencherPanne()
 	{
 		modeFonctionnement = new ModePanne();
 		execGammeService.stop();
@@ -206,5 +217,5 @@ class Controleur implements IExecuteur, IPilote
 	public boolean gammeEnCours()
 	{
 		return execGammeService.gammeEnCours();
-	}	
+	}
 }

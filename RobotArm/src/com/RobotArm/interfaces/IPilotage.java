@@ -1,4 +1,8 @@
-interface IPilotage
+package com.RobotArm.interfaces;
+
+import java.util.ArrayList;
+
+public interface IPilotage
 {
 	public void afficherEtatSysteme();
 	

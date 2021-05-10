@@ -1,4 +1,10 @@
-class Moteur
+package com.RobotArm.business;
+
+import com.RobotArm.interfaces.*;
+
+import lejos.hardware.motor.Motor;
+
+public class Moteur
 {
 	private char port;
 	private double ratio;

@@ -1,4 +1,8 @@
-class Operations
+package com.RobotArm.business;
+
+import java.util.ArrayList;
+
+public class Operation
 {
 	ArrayList<Tache> ListeTaches;
 	
@@ -11,19 +15,19 @@ class Operations
 	
 	public void AjouterTache(Tache t)
 	{
-		ListeTaches.Ajouter(o);		
+		ListeTaches.add(t);		
 	}
 	
 	
 	public void SupprimerTache(Tache t)
 	{
-		ListeTaches.remove(o);		
+		ListeTaches.remove(t);		
 	}
 	
 	
 	public void executer()
 	{
-		for(Tache t : listeTaches)
+		for(Tache t : this.ListeTaches)
 		{
 			t.executer();
 		}

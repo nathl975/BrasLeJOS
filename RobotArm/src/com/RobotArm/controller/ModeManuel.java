@@ -1,4 +1,8 @@
-class ModeManuel
+package com.RobotArm.controller;
+
+import com.RobotArm.interfaces.IEtatMode;
+
+public class ModeManuel implements IEtatMode
 {
 	public ModeManuel()
 	{

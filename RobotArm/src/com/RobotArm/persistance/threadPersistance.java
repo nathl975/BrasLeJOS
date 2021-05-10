@@ -1,7 +1,0 @@
-class ThreadPersistance
-{
-	public ()
-	{
-		
-	}
-}

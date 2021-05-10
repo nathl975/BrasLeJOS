@@ -1,22 +1,29 @@
-interface IPersistance
+package com.RobotArm.interfaces;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import com.RobotArm.business.*;
+public interface IPersistance
 {
-	public void creerGamme(Gamme g);
+	public void creerGamme(Gamme g) throws SQLException;
 
-	public void modifierGamme(Gamme g);
+	public void modifierGamme(Gamme g) throws SQLException;
 
-	public void supprimerGamme(String id);
+	public void supprimerGamme(String id) throws SQLException;
 
-	public HashMap<Gamme> recupererGammes();
+	public HashMap<String, Gamme> recupererGammes() throws SQLException;
 
-	public Gamme recupererGammeDefaut();
+	public Gamme recupererGammeDefaut() throws SQLException;
 
-	public void sauverLog(String log);
+	public void sauverLog(String log) throws SQLException;
 
-	public ArrayList<String> recupererLogs();
+	public ArrayList<String> recupererLogs() throws SQLException;
 
-	public String getConfig(String nomConfig);
+	public HashMap<String, String> getConfig(String nomConfig) throws SQLException;
 
-	public void creerCompte(String login, String pwd);
+	public void creerCompte(String login, String pwd) throws SQLException;
 
-	public void supprimerCompte(String login);
+	public void supprimerCompte(String login) throws SQLException;
 }
