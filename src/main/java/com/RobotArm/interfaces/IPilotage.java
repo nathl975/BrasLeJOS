@@ -2,11 +2,18 @@ package com.RobotArm.interfaces;
 
 import java.util.ArrayList;
 
-public interface IPilotage
-{
-	public void afficherEtatSysteme();
-	
-	public void afficherHistorique(ArrayList<String> rapports);
-	
-	public void envoyerMessage(String message);
+public interface IPilotage {
+  void afficherEtatSysteme();
+  
+  void afficherHistorique(ArrayList<String> paramArrayList);
+  
+  void ecouter();
+  
+  void ajoutListener(IPilote paramIPilote);
+  
+  void envoyerMessage(String paramString);
+  
+  void fermerConnexion();
+  
+  void stop();
 }
