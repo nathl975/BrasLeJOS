@@ -2,7 +2,10 @@
  
  import com.RobotArm.interfaces.IPilotage;
  import com.RobotArm.interfaces.IPilote;
- import java.io.BufferedReader;
+
+import lejos.utility.Delay;
+
+import java.io.BufferedReader;
  import java.io.IOException;
  import java.io.InputStreamReader;
  import java.io.PrintWriter;
@@ -20,6 +23,7 @@
 	private ServerSocket socket;
 	private Socket client;
 	private boolean wifiOn = true;
+	private int port = 80;
 	private IPilote pilote;
 	private Future execThread;
 	private ExecutorService execService = Executors.newSingleThreadExecutor();
@@ -27,43 +31,49 @@
 	
 	public void ecouter() {
 		Future<?> execThread = this.execService.submit(new Runnable()
+		{			
+			public void run()
+			{
+				PrintWriter out;
+				BufferedReader in;
+				
+				try
 				{
-					
-					public void run()
-					{
-						try {
-							int port = 80;
-							socket = new ServerSocket(port);
-							System.out.println(String.format("Ecoute sur le port : %d", new Object[] { Integer.valueOf(port) }));							
-							while(true)
-							{	
-								System.out.println("Attente d'un message...");								
-								client = socket.accept();
-								
-								PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-								BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-								
-								String s ="";
-								String message = "";
-						        while ((s = in.readLine()) != null)
-						        {
-									System.out.println(String.format("Message reçu : %s", s));
-									if(s != null)
-									{
-										message = message.concat(s);
-									}
-								}
-						        notifierPilote(message);
-								System.out.println("Fin de la transmission.");
-								if(!client.isClosed())
-									client.close();
-							}
+					socket = new ServerSocket(port);
+					System.out.println(String.format("Ecoute sur le port : %d", port));							
+					client = socket.accept();
+				} catch (IOException e)
+				{
+					e.printStackTrace();
+					return;
+				}			
+				
+				while(wifiOn)
+				{	
+					try {
+						Delay.msDelay(500); // Ajout d'un petit délai pour ne pas surcharger le thread
+						System.out.println("Attente d'un message...");								
+
+						out = new PrintWriter(client.getOutputStream(), true);
+						in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+						
+						String s ="";
+			        	if((s = in.readLine()) != null)
+						{
+			        		System.out.println(String.format("Message reçu : %s", s));
+							//message = message.concat(s);
+							notifierPilote(s);
 						}
-						catch (Exception e) {							
-							e.printStackTrace();
-						} 
+						/*if(!client.isClosed())
+							client.close();
+						System.out.println("Fin de la transmission.");*/
+					} catch (Exception e)
+					{							
+						e.printStackTrace();
 					}
-				});
+				}
+			}
+		});
 	}
 	
 	private void notifierPilote(String message) {

@@ -1,5 +1,5 @@
  package com.RobotArm.controller;
- 
+
  import com.RobotArm.business.Gamme;
  import com.RobotArm.business.ThreadGamme;
  import com.RobotArm.interfaces.IEtatMode;
@@ -11,17 +11,14 @@
  import com.google.gson.GsonBuilder;
  import com.google.gson.JsonElement;
  import com.google.gson.JsonObject;
- import com.google.gson.JsonParseException;
  import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-
 import lejos.hardware.motor.Motor;
 
 import java.sql.SQLException;
  import java.util.ArrayList;
  import java.util.Date;
  import java.util.HashMap;
- 
+
  public class Controleur
 	implements IExecuteur, IPilote
  {
@@ -38,30 +35,28 @@ import java.sql.SQLException;
 		this.listeGammes = new HashMap<>();
 		this.gammeDefaut = new Gamme();
 		this.modeFonctionnement = new ModeManuel();
+		this.execGammeService = new ThreadGamme(this);
 		
 		initRobot();
 		initGamme();
 	}
- 
+
 	
 	public void demarrer() {
-		System.out.println("Démarrage du contrôleur");
+		System.out.println("Demarrage du controleur");
 		this.pilotage.ecouter();
-		while (true);
+		while (true); // Occupe le thread principal
 	}
- 
- 
- 
- 
-	
-	private void initRobot() throws NumberFormatException, Exception {
+
+
+	private void initRobot() throws Exception {
 		int vitesseMoteur = Integer.parseInt(this.persistance.getConfig("vitesseMoteur"));
 		int accelerationMoteur = Integer.parseInt(this.persistance.getConfig("accelerationMoteur"));
 		int rendementMotA = Integer.parseInt(this.persistance.getConfig("rendementMotA"));
 		int rendementMotB = Integer.parseInt(this.persistance.getConfig("rendementMotB"));
 		int rendementMotC = Integer.parseInt(this.persistance.getConfig("rendementMotC"));
 
-
+/*
 		Motor.A.setSpeed(vitesseMoteur);
 		Motor.B.setSpeed(vitesseMoteur);
 		Motor.C.setSpeed(vitesseMoteur);
@@ -69,32 +64,32 @@ import java.sql.SQLException;
 		Motor.A.setAcceleration(rendementMotA);
 		Motor.B.setAcceleration(rendementMotB);
 		Motor.C.setAcceleration(rendementMotC);		
-		
+*/		
 		initPositionMoteurs();
 	}
- 
- 
+
+
 	
 	private void initPositionMoteurs() {}
- 
- 
+
+
 	
 	private void initGamme() throws Exception {
 		this.listeGammes = this.persistance.recupererGammes();
 		this.gammeDefaut = this.persistance.recupererGammeDefaut();
 	}
- 
- 
+
+
 	
 	public void sauverRapport(String r) {
 		try {
 			this.persistance.sauverLog(r);
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
-		} 
+		}
 	}
- 
- 
+
+
 	
 	public void executerGamme(String id) {
 		if (this.modeFonctionnement.peutExecuter())
@@ -105,17 +100,18 @@ import java.sql.SQLException;
 				if (gamme != null) {
 					this.execGammeService.executer(gamme);
 				} else {
-					this.pilotage.envoyerMessage("La gamme demandée n'existe pas.");
-				} 
+					System.out.println("La gamme demandee n'existe pas.");
+					//TODO : this.pilotage.envoyerMessage("La gamme demandee n'existe pas.");
+				}
 			} else {
-				
-				this.pilotage.envoyerMessage("Gamme déjà  en cours.");
+				System.out.println("Gamme deja en cours.");
+				//TODO : this.pilotage.envoyerMessage("Gamme deja en cours.");
 				return;
-			} 
+			}
 		}
 	}
- 
- 
+
+
 	
 	public void notifierFinGamme() {
 		if (this.modeFonctionnement.estAutonome())
@@ -123,11 +119,8 @@ import java.sql.SQLException;
 			executerGamme(this.gammeDefaut.getId());
 		}
 	}
- 
- 
- 
- 
-	
+
+
 	public ArrayList<String> filtrerLog(Date date) {
 		try {
 			ArrayList<String> rapports = this.persistance.recupererLogs();
@@ -136,9 +129,9 @@ import java.sql.SQLException;
 			
 			e.printStackTrace();
 			return null;
-		} 
+		}
 	}
- 
+
 	
 	public void notifierMessage(String msg) {
 		JsonObject root = new JsonObject();
@@ -146,13 +139,15 @@ import java.sql.SQLException;
 
 		try {
 			root = JsonParser.parseString(msg).getAsJsonObject();
+			if(root == null)
+				return;
 		}
 		catch (Exception e)
 		{		
-			System.out.println("Message reçu invalide ! Le format JSON n'est pas respecté");
+			System.out.println("Message recu invalide ! Le format JSON n'est pas respecte");
 			e.printStackTrace();
 			return;
-		} 
+		}		
 		
 		String action = root.get("action").getAsString();
 		switch (action) {
@@ -166,15 +161,15 @@ import java.sql.SQLException;
 						
 						this.persistance.creerGamme(g);
 						break;
-					} 
+					}
 					throw new Exception("Informations invalides");
 				}
 				catch (Exception e) {
 					
-					this.pilotage.envoyerMessage("La gamme n'a pas pu être créée.");
+					this.pilotage.envoyerMessage("La gamme n'a pas pu etre creee.");
 					sauverRapport(e.getMessage());
 					break;
-				} 
+				}
 			
 			case "modifierGamme":
 				try {
@@ -183,15 +178,15 @@ import java.sql.SQLException;
 						
 						this.persistance.modifierGamme(g);
 						break;
-					} 
+					}
 					throw new Exception("Informations invalides");
 				}
 				catch (Exception e) {
 					
-					this.pilotage.envoyerMessage("La gamme n'a pas pu Ãªtre modifiÃ©e.");
+					this.pilotage.envoyerMessage("La gamme n'a pas pu etre modifiee.");
 					sauverRapport(e.getMessage());
 					break;
-				} 
+				}
 			
 			case "supprimerGamme":
 				try {
@@ -201,15 +196,15 @@ import java.sql.SQLException;
 						this.persistance.supprimerGamme(g);
 						this.listeGammes.remove(g);
 						break;
-					} 
+					}
 					throw new Exception("Informations invalides");
 				}
 				catch (Exception e) {
 					
-					this.pilotage.envoyerMessage("La gamme n'a pas pu Ãªtre supprimÃ©e.");
+					this.pilotage.envoyerMessage("La gamme n'a pas pu etre supprimee.");
 					sauverRapport(e.getMessage());
 					break;
-				} 
+				}
 			
 			case "creerCompte":
 				try {
@@ -219,21 +214,21 @@ import java.sql.SQLException;
 						
 						this.persistance.creerCompte(login, pwd);
 						break;
-					} 
+					}
 					throw new Exception("Informations invalides");
 				}
 				catch (Exception e) {
 					
-					this.pilotage.envoyerMessage("Le compte n'a pas pu être créé.");
+					this.pilotage.envoyerMessage("Le compte n'a pas pu etre cree.");
 					sauverRapport(e.getMessage());
 					break;
-				} 
+				}
 			case "supprimerCompte":
 				try {
 					this.persistance.supprimerCompte(root.get("login").getAsString());
 				} catch (SQLException e) {
 					System.out.println("Erreur lors de la suppression du compte");
-				} 
+				}
 				break;
 			case "modeAutonome":
 				this.modeFonctionnement = new ModeAutonome();
@@ -242,19 +237,22 @@ import java.sql.SQLException;
 				declencherPanne();
 				break;
 			case "executerGamme":
-				executerGamme(root.get("idGamme").getAsString());
+				JsonElement idGamme = root.get("idGamme");
+				if(idGamme == null)
+					throw new NullPointerException("L'id de la gamme � ex�cuter est nul");
+				executerGamme(idGamme.getAsString());
 				break;
 			
 			case "recupererLogs":
 				if (root.get("date").getAsString() != null) {
 					ArrayList<String> rapports = filtrerLog(new Date(root.get("d").getAsString())); break;
-				} 
+				}
 				try {
 					ArrayList<String> rapports = this.persistance.recupererLogs();
 					this.pilotage.afficherHistorique(rapports);
 				} catch (SQLException e) {
-					System.out.println("Erreur lors de la récupération des logs");
-				} 
+					System.out.println("Erreur lors de la recuperation des logs");
+				}
 				break;
 			case "ping":
 				System.out.println("Ping re�u");
@@ -263,18 +261,18 @@ import java.sql.SQLException;
 			default:
 				System.out.println(String.format("Commande inconnue : %s", action));
 				break;
-		} 
-		System.out.println("Message trait�");
+		}
+		System.out.println("Message traite");
 	}
- 
+
 	
 	public void declencherPanne() {
 		this.modeFonctionnement = new ModePanne();
 		this.execGammeService.stop();
-		this.pilotage.envoyerMessage("Mode panne activé.");
+		this.pilotage.envoyerMessage("Mode panne active.");
 	}
- 
- 
+
+
 	
 	public boolean gammeEnCours() {
 		return this.execGammeService.gammeEnCours().booleanValue();
