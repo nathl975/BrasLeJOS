@@ -1,27 +1,27 @@
  package com.RobotArm.controller;
 
- import com.RobotArm.business.Gamme;
- import com.RobotArm.business.ThreadGamme;
- import com.RobotArm.interfaces.IEtatMode;
- import com.RobotArm.interfaces.IExecuteur;
- import com.RobotArm.interfaces.IPersistance;
- import com.RobotArm.interfaces.IPilotage;
- import com.RobotArm.interfaces.IPilote;
- import com.google.gson.Gson;
- import com.google.gson.GsonBuilder;
- import com.google.gson.JsonElement;
- import com.google.gson.JsonObject;
- import com.google.gson.JsonParser;
+import com.RobotArm.business.Gamme;
+import com.RobotArm.business.ThreadGamme;
+import com.RobotArm.interfaces.IEtatMode;
+import com.RobotArm.interfaces.IExecuteur;
+import com.RobotArm.interfaces.IPersistance;
+import com.RobotArm.interfaces.IPilotage;
+import com.RobotArm.interfaces.IPilote;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import lejos.hardware.motor.Motor;
 
 import java.sql.SQLException;
- import java.util.ArrayList;
- import java.util.Date;
- import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 
- public class Controleur
+public class Controleur
 	implements IExecuteur, IPilote
- {
+{
 	HashMap<String, Gamme> listeGammes;
 	Gamme gammeDefaut;
 	IPersistance persistance;
@@ -277,4 +277,4 @@ import java.sql.SQLException;
 	public boolean gammeEnCours() {
 		return this.execGammeService.gammeEnCours().booleanValue();
 	}
- }
+}

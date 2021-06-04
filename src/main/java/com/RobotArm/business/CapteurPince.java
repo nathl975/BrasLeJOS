@@ -6,17 +6,17 @@ public class CapteurPince implements ICapteur {
 
 	private static CapteurPince capteur;
 	
-   public static CapteurPince getInstance()
-   {
+  public static CapteurPince getInstance()
+  {
 	   return capteur;
-   }
+  }
 
-   public static void initCapteur()
-   {
+  public static void initCapteur()
+  {
 	   if(capteur != null)
 		   return;
 	   capteur = new CapteurPince();
-   }
+  }
 	 	
 	
 	@Override

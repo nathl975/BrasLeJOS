@@ -1,12 +1,12 @@
 package com.RobotArm.business;
- 
+
 import com.RobotArm.interfaces.ICapteur;
 import lejos.hardware.motor.Motor;
 import lejos.hardware.motor.NXTRegulatedMotor;
- 
- 
- public class Moteur
- {
+
+
+public class Moteur
+{
 	private char port;
 	private double ratio;
 	private ICapteur capteur;
@@ -72,7 +72,7 @@ import lejos.hardware.motor.NXTRegulatedMotor;
 				return null;
 		}
 	}
- 
+
 	
 	public void tourner(int degres) {
 		this.NXTMotor.rotate((int)Math.round(degres * this.ratio), true);
@@ -93,4 +93,4 @@ import lejos.hardware.motor.NXTRegulatedMotor;
 			break;
 		} 
 	}
- }
+}

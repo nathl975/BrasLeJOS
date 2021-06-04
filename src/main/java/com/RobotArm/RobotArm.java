@@ -1,19 +1,19 @@
  package com.RobotArm;
- 
- import com.RobotArm.business.*;
+
+import com.RobotArm.business.*;
 import com.RobotArm.business.Moteur;
 import com.RobotArm.controller.Controleur;
- import com.RobotArm.interfaces.IPersistance;
- import com.RobotArm.interfaces.IPilotage;
- import com.RobotArm.interfaces.IPilote;
- import com.RobotArm.persistance.DummyPersistance;
- import com.RobotArm.pilotage.WifiListener;
- import java.io.IOException;
- import java.sql.SQLException;
- import lejos.utility.Delay;
+import com.RobotArm.interfaces.IPersistance;
+import com.RobotArm.interfaces.IPilotage;
+import com.RobotArm.interfaces.IPilote;
+import com.RobotArm.persistance.DummyPersistance;
+import com.RobotArm.pilotage.WifiListener;
+import java.io.IOException;
+import java.sql.SQLException;
+import lejos.utility.Delay;
 
- 
- public class RobotArm
+
+public class RobotArm
 {
 	private static IPersistance persistance;
 	private static IPilotage pilotage;
@@ -21,7 +21,7 @@ import com.RobotArm.controller.Controleur;
 	
 	public static void main(String[] args){
 		System.out.println("Début du programme");
- 		
+		
 		try
 		{
 			//InitHardware();

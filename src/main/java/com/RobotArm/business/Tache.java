@@ -15,7 +15,7 @@ public class Tache {
 			setTypeAction(ta);
 			this.valeur = v;
 		}
- 
+
 		
 		public Tache(int id, String description, TypeAction typeAction, int valeur, char moteur)
 		{

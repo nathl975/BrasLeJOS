@@ -1,25 +1,25 @@
  package com.RobotArm.pilotage;
- 
- import com.RobotArm.interfaces.IPilotage;
- import com.RobotArm.interfaces.IPilote;
+
+import com.RobotArm.interfaces.IPilotage;
+import com.RobotArm.interfaces.IPilote;
 
 import lejos.utility.Delay;
 
 import java.io.BufferedReader;
- import java.io.IOException;
- import java.io.InputStreamReader;
- import java.io.PrintWriter;
- import java.net.ServerSocket;
- import java.net.Socket;
- import java.util.ArrayList;
- import java.util.concurrent.ExecutorService;
- import java.util.concurrent.Executors;
- import java.util.concurrent.Future;
- 
- 
- public class WifiListener
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+
+public class WifiListener
 	implements IPilotage
- {
+{
 	private ServerSocket socket;
 	private Socket client;
 	private boolean wifiOn = true;
@@ -79,33 +79,33 @@ import java.io.BufferedReader;
 	private void notifierPilote(String message) {
 		this.pilote.notifierMessage(message);
 	}
- 
- 
- 
- 
+
+
+
+
 	
 	public void afficherEtatSysteme() {}
- 
- 
- 
- 
+
+
+
+
 	
 	public void afficherHistorique(ArrayList<String> rapports) {}
- 
- 
- 
- 
+
+
+
+
 	
 	public void envoyerMessage(String message) {}
- 
- 
- 
- 
+
+
+
+
 	
 	public void stop() {
 		this.wifiOn = false;
 	}
- 
+
 	
 	public void fermerConnexion() {
 		try {
@@ -115,10 +115,10 @@ import java.io.BufferedReader;
 			e.printStackTrace();
 		} 
 	}
- 
- 
+
+
 	
 	public void ajoutListener(IPilote listener) {
 		this.pilote = listener;
 	}
- }
+}

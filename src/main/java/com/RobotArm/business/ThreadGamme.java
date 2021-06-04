@@ -1,12 +1,12 @@
  package com.RobotArm.business;
 
- import com.RobotArm.interfaces.IExecuteur;
- import java.util.concurrent.ExecutorService;
- import java.util.concurrent.Executors;
- import java.util.concurrent.Future;
+import com.RobotArm.interfaces.IExecuteur;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
- public class ThreadGamme
- {
+public class ThreadGamme
+{
 	public IExecuteur executeur;
 	private ExecutorService execService;
 	private Future execThread;
@@ -45,4 +45,4 @@
 	}
 	
 	public void stop() {}
- }
+}
