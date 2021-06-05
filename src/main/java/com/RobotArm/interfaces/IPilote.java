@@ -1,5 +1,5 @@
 package com.RobotArm.interfaces;
 
 public interface IPilote {
- void notifierMessage(String paramString);
+  void notifierMessage(String paramString);
 }

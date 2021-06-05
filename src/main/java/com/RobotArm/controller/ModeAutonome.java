@@ -1,18 +1,15 @@
  package com.RobotArm.controller;
-
+ 
 import com.RobotArm.interfaces.IEtatMode;
-
-
-
-
-
-public class ModeAutonome
-  implements IEtatMode
-{
-  public boolean peutExecuter() {
-    return true;
-  }
-  public boolean estAutonome() {
-    return false;
-  }
-}
+ 
+ 
+ public class ModeAutonome
+   implements IEtatMode
+ {
+   public boolean peutExecuter() {
+     return true;
+   }
+   public boolean estAutonome() {
+     return true;
+   }
+ }

@@ -3,29 +3,54 @@
 import lejos.utility.Delay;
 
 public class Tache {
-	private int id;
-		private String description;
-		private TypeAction typeAction;
-		int valeur;
-		Moteur moteur;
-		
-		public enum TypeAction { Attendre, Tourner; }
+	private String id;
+	private String description;
+	private TypeAction typeAction;
+	int valeur;
+	Moteur moteur;
+	
+	public enum TypeAction { Attendre, Tourner; }
 
-		public Tache(TypeAction ta, int v) {
-			setTypeAction(ta);
-			this.valeur = v;
-		}
-
-		
-		public Tache(int id, String description, TypeAction typeAction, int valeur, char moteur)
-		{
+	public Tache(TypeAction ta, int v) {
+		setTypeAction(ta);
+		this.valeur = v;
+	}
+ 
+	/**
+	 * Crée une tâche d'attente
+	 * @param id
+	 * @param description
+	 * @param typeAction
+	 * @param valeur
+	 */
+	public Tache(String id, String description, int valeur)
+	{
 		this.id = id;
 		this.description = description;
-		this.typeAction = typeAction;
+		this.typeAction = TypeAction.Attendre;
+		this.valeur = valeur;
+		
+		this.moteur = null;
+	}
+
+	/**
+	 * Crée une tâche de rotation
+	 * @param id
+	 * @param description
+	 * @param typeAction
+	 * @param valeur
+	 * @param moteur
+	 */
+	public Tache(String id, String description, int valeur, char moteur)
+	{
+		this.id = id;
+		this.description = description;
+		this.typeAction = TypeAction.Tourner;
 		this.valeur = valeur;
 		
 		this.moteur = Moteur.getInstance(moteur);
 	}
+	
 
 	public void executer()
 	{
@@ -35,15 +60,16 @@ public class Tache {
 				break;
 			case Tourner:
 				this.moteur.tourner(this.valeur);
+				this.moteur.stop();
 				break;
 		} 
 	}
 	
-	public int getId() {
+	public String getId() {
 		return this.id;
 	}
 	
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 	
