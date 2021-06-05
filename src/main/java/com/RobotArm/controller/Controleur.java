@@ -1,235 +1,331 @@
-package com.RobotArm.controller;
+ package com.RobotArm.controller;
+
+ import com.RobotArm.business.Gamme;
+import com.RobotArm.business.Moteur;
+import com.RobotArm.business.ThreadGamme;
+import com.RobotArm.business.Utilisateur;
+import com.RobotArm.interfaces.IEtatMode;
+ import com.RobotArm.interfaces.IExecuteur;
+ import com.RobotArm.interfaces.IPersistance;
+ import com.RobotArm.interfaces.IPilotage;
+ import com.RobotArm.interfaces.IPilote;
+ import com.google.gson.Gson;
+ import com.google.gson.GsonBuilder;
+ import com.google.gson.JsonElement;
+ import com.google.gson.JsonObject;
+ import com.google.gson.JsonParser;
+import lejos.hardware.motor.Motor;
+import lejos.utility.Delay;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
+ import java.util.ArrayList;
+ import java.util.Date;
+ import java.util.HashMap;
 
-import com.RobotArm.business.Gamme;
-import com.RobotArm.business.ThreadGamme;
-import com.RobotArm.interfaces.IEtatMode;
-import com.RobotArm.interfaces.IExecuteur;
-import com.RobotArm.interfaces.IPersistance;
-import com.RobotArm.interfaces.IPilotage;
-import com.RobotArm.interfaces.IPilote;
-import com.google.gson.*;
-
-import lejos.hardware.motor.Motor;
-
-public class Controleur implements IExecuteur, IPilote
-{
+ public class Controleur implements IExecuteur, IPilote
+ {
 	HashMap<String, Gamme> listeGammes;
 	Gamme gammeDefaut;
+	Utilisateur utilisateurConnecte;
 	IPersistance persistance;
 	IEtatMode modeFonctionnement;
 	IPilotage pilotage;
 	ThreadGamme execGammeService;
+	Gson gson;
 	
-	
-	public Controleur(IPersistance pe, IPilotage pi) throws SQLException
-	{
+	public Controleur(IPersistance pe, IPilotage pi) throws Exception {
 		this.persistance = pe;
 		this.pilotage = pi;
-		this.listeGammes = new HashMap<String, Gamme>();
+		this.listeGammes = new HashMap<>();
 		this.gammeDefaut = new Gamme();
 		this.modeFonctionnement = new ModeManuel();
+		this.execGammeService = new ThreadGamme(this);
+		this.gson = (new GsonBuilder()).create();
 		
 		initRobot();
 		initGamme();
 	}
-	
-	
-	private void initRobot() throws NumberFormatException, SQLException
-	{
-		int vitesseMoteur = Integer.parseInt(persistance.getConfig("vitesseMoteur").get("vitMot"));
-		int accelerationMoteur = Integer.parseInt(persistance.getConfig("accelerationMoteur").get("accMot"));
-		int rendementMotA = Integer.parseInt(persistance.getConfig("rendementMotA").get("motA"));
-		int rendementMotB = Integer.parseInt(persistance.getConfig("rendementMotB").get("motB"));
-		int rendementMotC = Integer.parseInt(persistance.getConfig("rendementMotC").get("motC"));
-		int val;
 
-		Motor.A.setSpeed(vitesseMoteur);
-		Motor.B.setSpeed(vitesseMoteur);
-		Motor.C.setSpeed(vitesseMoteur);
-		
-		Motor.A.setAcceleration(rendementMotA);
-		Motor.B.setAcceleration(rendementMotB);
-		Motor.C.setAcceleration(rendementMotC);
-		
-		initPositionMoteurs(); // Initialise les moteurs pour les tourner en butÃ©e.
-	}
 	
+	public void demarrer() {
+		System.out.println("Demarrage du controleur");
+		this.pilotage.ecouter();
+		while (true) // Thread principal
+		{
+			while(execGammeService.gammeEnCours()); // Attendre que l'exécution soit possible
+			
+			if (this.modeFonctionnement.estAutonome())
+			{					
+				executerGamme(this.gammeDefaut.getId());
+			}
+		}
+	}
+
+
+	private void initRobot() throws Exception {
+		initPositionMoteurs();
+	}
+
+
+	/**
+	 * Positionne tous les moteurs en butée. 
+	 */
 	private void initPositionMoteurs()
 	{
-		//TODO : Ajouter l'initialisation des moteurs pour les mettre en butée
-	}
-	
-	private void initGamme() throws SQLException
-	{
-		this.listeGammes = persistance.recupererGammes();
-		this.gammeDefaut = persistance.recupererGammeDefaut();
-	}
-	
-	
-	public void sauverRapport(String r) throws SQLException
-	{
-		persistance.sauverLog(r);
-	}
-	
+		Moteur.getInstance('A').tourner(360);
+		Moteur.getInstance('A').stop();
+		System.out.println("Moteur A fini");
 
-	public void executerGamme(String id)
-	{
-		if(modeFonctionnement.peutExecuter())
+		Moteur.getInstance('B').tourner(360);
+		Moteur.getInstance('B').stop();		
+		System.out.println("Moteur B fini");		
+
+		Moteur.getInstance('C').tourner(360);
+		Moteur.getInstance('C').stop();
+		System.out.println("Moteur C fini");
+	}
+
+
+	
+	private void initGamme() throws Exception {
+		this.listeGammes = this.persistance.recupererGammes();
+		this.gammeDefaut = this.persistance.recupererGammeDefaut();
+	}
+
+
+	
+	public void sauverRapport(String r) {
+		try {
+			this.persistance.sauverLog(r);
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	
+	public void executerGamme(String id) {
+		if (this.modeFonctionnement.peutExecuter())
 		{
-			if(!gammeEnCours())
-			{
-				Gamme gamme = listeGammes.get(id);
-				if(gamme != null)
-					execGammeService.executer(gamme); // ExÃ©cute une gamme dans un thread
-				else
-					pilotage.envoyerMessage("La gamme demandée n'existe pas.");
+			if (!gammeEnCours()) {				
+				Gamme gamme = this.listeGammes.get(id);
+				if (gamme != null) {
+					this.execGammeService.executer(gamme);
+				} else {
+					pilotage.envoyerMessage("La gamme demandee n'existe pas.");
+				}
+			} else {
+				pilotage.envoyerMessage("Gamme deja en cours.");
+				return;
+			}
+		}
+	}
+
+	
+	public void notifierFinGamme() {
+		pilotage.envoyerMessage("Gamme terminee !");
+		
+		this.initPositionMoteurs();
+	}
+
+
+	public ArrayList<String> filtrerLog(Date date) {
+		try {
+			ArrayList<String> rapports = this.persistance.recupererLogs();
+			return rapports;
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	
+	public void notifierMessage(String msg) {
+		JsonObject root = new JsonObject();
+
+		try {
+			root = JsonParser.parseString(msg).getAsJsonObject();
+			if(root == null)
+				return;
+		}
+		catch (Exception e)
+		{		
+			System.out.println("Message recu invalide ! Le format JSON n'est pas respecte");
+			e.printStackTrace();
+			return;
+		}		
+		
+		String action;
+		JsonElement actionJson = root.get("action");
+		if(actionJson == null) return;
+		action = actionJson.getAsString();
+		
+		String login, pwd;
+		if(utilisateurConnecte == null)
+		{
+			if(action.equals("co"))
+			{				
+				login = root.get("login").getAsString();
+				pwd = root.get("pwd").getAsString();
+				if (login != null && pwd != null)
+				{
+					utilisateurConnecte = persistance.trouverCompte(login, pwd);
+					if(utilisateurConnecte == null)
+						pilotage.envoyerMessage("Cet utilisateur n'existe pas !");
+					else
+						pilotage.envoyerMessage(String.format("Vous etes connecte sous %s.", utilisateurConnecte.getLogin()));
+				}
+				return;
 			}
 			else
 			{
-				pilotage.envoyerMessage("Gamme déjà  en cours.");
+				pilotage.envoyerMessage("Vous n'êtes pas connecté !");
 				return;
 			}
 		}
 		
-	}
-	
-
-	public void notifierFinGamme()
-	{
-		if(modeFonctionnement.estAutonome())
-		{
-			executerGamme(gammeDefaut.getId());
-		}
-	}
-
-
-	public ArrayList<String> filtrerLog(Date date) throws SQLException
-	{
-		ArrayList<String> rapports = persistance.recupererLogs();
-		//Filtrage du tableau et expulsion des Ã©lÃ©ments dont la date est antÃ©rieure au paramÃ¨tre transmis.
-		return rapports;
-	}
-
-
-	public void notifierMessage(String msg) throws SQLException
-	{		
-		Gson gson = new GsonBuilder().create();
-
-		//TODO : conversion string to json
-		
-		JsonObject root = JsonParser.parseString(msg).getAsJsonObject();
-		
-		switch(root.get("action").getAsString())
-		{
-			case "creerGamme":
-				try
-				{
-					Gamme g = gson.fromJson(root.get("gamme").getAsJsonObject(), Gamme.class);
+		switch (action) {
+			case "co":
+				pilotage.envoyerMessage(String.format("Vous êtes déjà connecté sous %s", utilisateurConnecte.getLogin()));
+				break;
+			case "deco":
+				utilisateurConnecte = null;
+				pilotage.envoyerMessage("Vous etes bien deconnecte.");
+			case "newG":				
+				try {
+					Gamme g = (Gamme)gson.fromJson((JsonElement)root.get("gamme").getAsJsonObject(), Gamme.class);
 					
-					if(g != null)
-					{
-						persistance.creerGamme(g);
+					if (g != null) {
+						
+						this.persistance.creerGamme(g);
+						break;
 					}
-					else
-						throw new Exception("Informations invalides");
+					throw new Exception("Informations invalides");
 				}
-				catch(Exception e)
-				{
-					pilotage.envoyerMessage("La gamme n'a pas pu Ãªtre crÃ©Ã©e.");
+				catch (Exception e) {
+					
+					this.pilotage.envoyerMessage("La gamme n'a pas pu etre creee.");
 					sauverRapport(e.getMessage());
+					break;
 				}
-				break;
-			case "modifierGamme":
-				try
-				{
-					Gamme g = gson.fromJson(root.get("gamme").getAsJsonObject(), Gamme.class);
-					if(g != null)
-					{
-						persistance.modifierGamme(g);
+			
+			case "modG":
+				try {
+					Gamme g = (Gamme)gson.fromJson((JsonElement)root.get("gamme").getAsJsonObject(), Gamme.class);
+					if (g != null) {
+						
+						this.persistance.modifierGamme(g);
+						break;
 					}
-					else
-						throw new Exception("Informations invalides");
+					throw new Exception("Informations invalides");
 				}
-				catch(Exception e)
-				{
-					pilotage.envoyerMessage("La gamme n'a pas pu Ãªtre modifiÃ©e.");
+				catch (Exception e) {
+					
+					this.pilotage.envoyerMessage("La gamme n'a pas pu etre modifiee.");
 					sauverRapport(e.getMessage());
+					break;
 				}
-				break;
-			case "supprimerGamme":
-				try
-				{
+			
+			case "delG":
+				try {
 					String g = root.get("idGamme").getAsString();
-					if(g != null)
-					{
-						persistance.supprimerGamme(g);
+					if (g != null) {
+						
+						this.persistance.supprimerGamme(g);
+						this.listeGammes.remove(g);
+						break;
 					}
-					else
-						throw new Exception("Informations invalides");
+					throw new Exception("Informations invalides");
 				}
-				catch(Exception e)
-				{
-					pilotage.envoyerMessage("La gamme n'a pas pu Ãªtre supprimÃ©e.");
+				catch (Exception e) {
+					
+					this.pilotage.envoyerMessage("La gamme n'a pas pu etre supprimee.");
 					sauverRapport(e.getMessage());
-				}			
-				break;
-			case "creerCompte":
-				try
-				{
-					String login = root.get("login").getAsString();
-					String pwd = root.get("pwd").getAsString();
-					if(login != null && pwd != null)
-					{
-						persistance.creerCompte(login, pwd);
+					break;
+				}
+			
+			case "newU":
+				try {
+					login = root.get("login").getAsString();
+					pwd = root.get("pwd").getAsString();
+					if (login != null && pwd != null) {
+						
+						this.persistance.creerCompte(login, pwd);
+						break;
 					}
-					else
-						throw new Exception("Informations invalides");
+					throw new Exception("Informations invalides");
 				}
-				catch(Exception e)
-				{
-					pilotage.envoyerMessage("Le compte n'a pas pu être créé.");
+				catch (Exception e) {
+					
+					this.pilotage.envoyerMessage("Le compte n'a pas pu etre cree.");
 					sauverRapport(e.getMessage());
-				}			
+					break;
+				}
+			case "delU":
+				try {
+					this.persistance.supprimerCompte(root.get("login").getAsString());
+				} catch (SQLException e) {
+					System.out.println("Erreur lors de la suppression du compte");
+				}
 				break;
-			case "supprimerCompte":
-				persistance.supprimerCompte(root.get("login").getAsString());
+			case "auto":
+				if(this.modeFonctionnement.getClass().equals(ModePanne.class))
+					this.execGammeService = new ThreadGamme(this);
+				this.modeFonctionnement = new ModeAutonome();
 				break;
-			case "modeAutonome":
-				modeFonctionnement = new ModeAutonome();
+			case "manu":
+				if(this.modeFonctionnement.getClass().equals(ModePanne.class))
+					this.execGammeService = new ThreadGamme(this);				
+				this.modeFonctionnement = new ModeManuel();
 				break;
-			case "declencherPanne":
+			case "panne":
 				declencherPanne();
 				break;
-			case "executerGamme":
-				executerGamme(root.get("idGamme").getAsString());
+			case "execG":
+				JsonElement idGamme = root.get("idGamme");
+				if(idGamme == null)
+					throw new NullPointerException("L'id de la gamme à exécuter est nul");
+				executerGamme(idGamme.getAsString());
 				break;
-			case "recupererLogs":
-				ArrayList<String> rapports;
-				if(root.get("date").getAsString() != null)
-					rapports = filtrerLog(new Date(root.get("d").getAsString()));
-				else
-					rapports = persistance.recupererLogs();		
-				pilotage.afficherHistorique(rapports);
+			
+			case "logs":
+				if (root.get("date").getAsString() != null) {
+					ArrayList<String> rapports = filtrerLog(new Date(root.get("d").getAsString())); break;
+				}
+				try {
+					ArrayList<String> rapports = this.persistance.recupererLogs();
+					this.pilotage.afficherHistorique(rapports);
+				} catch (SQLException e) {
+					System.out.println("Erreur lors de la recuperation des logs");
+				}
+				break;
+			case "ping":
+				System.out.println("Ping reçu");
+				this.pilotage.envoyerMessage("Pong !");
+				break;
+			default:
+				System.out.println(String.format("Commande inconnue : %s", action));
 				break;
 		}
+		System.out.println("Message traite");
 	}
 
-
-	public void declencherPanne()
+	
+	public void declencherPanne() {
+		this.modeFonctionnement = new ModePanne();
+		this.execGammeService.stop();
+		System.out.println("Mode panne actif.");
+	}
+	
+	
+	public void reprisePanne()
 	{
-		modeFonctionnement = new ModePanne();
-		execGammeService.stop();
-		pilotage.envoyerMessage("Mode panne activé.");
+		
 	}
 
 
-	public boolean gammeEnCours()
-	{
-		return execGammeService.gammeEnCours();
+	
+	public boolean gammeEnCours() {
+		return this.execGammeService.gammeEnCours();
 	}
-}
+ }

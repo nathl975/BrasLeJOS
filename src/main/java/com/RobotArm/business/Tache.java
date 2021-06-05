@@ -1,59 +1,92 @@
-package com.RobotArm.business;
+ package com.RobotArm.business;
 
 import lejos.utility.Delay;
 
 public class Tache {
-	public enum TypeAction {
-		Attendre, Tourner
-	}
-
-	private int id;
+	private String id;
 	private String description;
 	private TypeAction typeAction;
 	int valeur;
 	Moteur moteur;
+	
+	public enum TypeAction { Attendre, Tourner; }
 
 	public Tache(TypeAction ta, int v) {
-		this.setTypeAction(ta);
+		setTypeAction(ta);
 		this.valeur = v;
 	}
-
-	public Tache(int id, String description, TypeAction typeAction, int valeur, char moteur) {
-		// TODO Auto-generated constructor stub
+ 
+	/**
+	 * Crée une tâche d'attente
+	 * @param id
+	 * @param description
+	 * @param typeAction
+	 * @param valeur
+	 */
+	public Tache(String id, String description, int valeur)
+	{
+		this.id = id;
+		this.description = description;
+		this.typeAction = TypeAction.Attendre;
+		this.valeur = valeur;
+		
+		this.moteur = null;
 	}
 
-	public void executer() {
+	/**
+	 * Crée une tâche de rotation
+	 * @param id
+	 * @param description
+	 * @param typeAction
+	 * @param valeur
+	 * @param moteur
+	 */
+	public Tache(String id, String description, int valeur, char moteur)
+	{
+		this.id = id;
+		this.description = description;
+		this.typeAction = TypeAction.Tourner;
+		this.valeur = valeur;
+		
+		this.moteur = Moteur.getInstance(moteur);
+	}
+	
+
+	public void executer()
+	{
 		switch (getTypeAction()) {
-		case Attendre:
-			Delay.msDelay(this.valeur);
-			break;
-		case Tourner:
-			moteur.tourner(this.valeur);
-			break;
-		}
+			case Attendre:
+				Delay.msDelay(this.valeur);
+				break;
+			case Tourner:
+				this.moteur.tourner(this.valeur);
+				this.moteur.stop();
+				break;
+		} 
 	}
-
-	public int getId() {
-		return id;
+	
+	public String getId() {
+		return this.id;
 	}
-
-	public void setId(int id) {
+	
+	public void setId(String id) {
 		this.id = id;
 	}
 	
 	public String getDescription() {
-		return description;
+		return this.description;
 	}
-
+	
 	public void setDescription(String description) {
 		this.description = description;
 	}
-
+	
 	public TypeAction getTypeAction() {
-		return typeAction;
+		return this.typeAction;
 	}
-
+	
 	public void setTypeAction(TypeAction typeAction) {
 		this.typeAction = typeAction;
 	}
 }
+

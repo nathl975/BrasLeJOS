@@ -1,4 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+      <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.miage.brasLeJOS</groupId>
   <artifactId>brasLeJOS</artifactId>
@@ -18,29 +22,6 @@
 </dependencies>
   <build>
   	<plugins>
-  		<plugin>
-  			<groupId>org.apache.maven.plugins</groupId>
-  			<artifactId>maven-compiler-plugin</artifactId>
-	        <configuration>
-	            <source>1.7</source>
-	            <target>1.7</target>
-	        </configuration>  			
-  		</plugin>
-	    <plugin>
-	        <groupId>org.codehaus.mojo</groupId>
-	        <artifactId>exec-maven-plugin</artifactId>
-	        <version>1.2.1</version>
-	        <executions>
-	            <execution>
-	                <goals>
-	                    <goal>java</goal>
-	                </goals>
-	            </execution>
-	        </executions>
-	        <configuration>
-	            <mainClass>com.RobotArm.RobotArm</mainClass>
-	        </configuration>
-	    </plugin>  		
   	</plugins>
   </build>
 </project>

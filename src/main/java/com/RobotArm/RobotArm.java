@@ -1,40 +1,69 @@
-package com.RobotArm;
+ package com.RobotArm;
+ 
+ import com.RobotArm.business.*;
+import com.RobotArm.business.Moteur;
+import com.RobotArm.controller.Controleur;
+ import com.RobotArm.interfaces.IPersistance;
+ import com.RobotArm.interfaces.IPilotage;
+ import com.RobotArm.interfaces.IPilote;
+ import com.RobotArm.persistance.DummyPersistance;
+ import com.RobotArm.pilotage.WifiListener;
+ import java.io.IOException;
+ import java.sql.SQLException;
 
-import lejos.hardware.*;
-import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.Motor;
-import lejos.hardware.sensor.*;
-import lejos.hardware.port.*;
 import lejos.utility.Delay;
 
-import java.io.IOException;
-import java.lang.Thread;
-import java.sql.SQLException;
-
-import com.RobotArm.controller.*;
-import com.RobotArm.interfaces.*;
-import com.RobotArm.persistance.*;
-
-public class RobotArm {	
+ 
+ public class RobotArm
+{
 	private static IPersistance persistance;
 	private static IPilotage pilotage;
 	private static Controleur controleur;
 	
-	public static void main(String[] args) {
-		try {
-			persistance = new ThreadPersistance();
-			controleur = new Controleur(persistance, pilotage);			
-		} catch (IOException e) {
-			System.out.println("Une erreur bloquane est survenue, impossible de démarrer !");
-			e.printStackTrace();			
-		} catch (SQLException e) {
-			System.out.println("Une erreur SQL bloquante est survenue, impossible de démarrer !");
-			e.printStackTrace();			
-		} catch(Exception e) {
-			System.out.println("Une erreur inconnue est survenue, impossible de démarrer !");
-			e.printStackTrace();			
+	public static void main(String[] args){
+		System.out.println("Debut du programme");
+ 		
+		try
+		{
+			InitHardware();
+			persistance = (IPersistance)new DummyPersistance();
+			pilotage = (IPilotage)new WifiListener();
+			controleur = new Controleur(persistance, pilotage);
+			pilotage.ajoutListener((IPilote)controleur);
+			
+			controleur.demarrer();
 		}
-		Delay.msDelay(3000);
+		catch (IOException e){
+			System.out.println("Une erreur bloquane est survenue, impossible de demarrer !");
+			e.printStackTrace();
+		} catch (SQLException e){
+			System.out.println("Une erreur SQL bloquante est survenue, impossible de demarrer !");
+			e.printStackTrace();
+		} catch (Exception e){
+			System.out.println("Une erreur inconnue est survenue, impossible de demarrer !");
+			e.printStackTrace();
+		} 
+		pilotage.fermerConnexion();
+		
+		pilotage = null;
+		persistance = null;
+		controleur = null;
+		System.gc();
 		System.out.println("Fin du programme");
+	}
+	
+	
+	private static void InitHardware()
+	{
+		float vitesse = 120;
+		int acceleration = 360;
+		CapteurContact.initCapteur('1');
+		CapteurCouleur.initCapteur('2');
+		CapteurPince.initCapteur();
+		
+		Moteur.initMoteur('A', 2, CapteurPince.getInstance(), vitesse, acceleration, Moteur.SENS_POSITIF);
+		Moteur.initMoteur('B', 3, CapteurCouleur.getInstance(), vitesse, acceleration, Moteur.SENS_NEGATIF);
+		Moteur.initMoteur('C', 5, CapteurContact.getInstance(), vitesse, acceleration, Moteur.SENS_POSITIF);
 	}
 }

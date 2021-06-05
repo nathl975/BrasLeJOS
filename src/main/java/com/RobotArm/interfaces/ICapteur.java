@@ -1,6 +1,5 @@
 package com.RobotArm.interfaces;
 
-public interface ICapteur
-{
-	public int getMesure();
+public interface ICapteur {
+  int getMesure();
 }

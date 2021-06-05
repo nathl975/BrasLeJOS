@@ -1,55 +1,138 @@
 package com.RobotArm.business;
-
-import com.RobotArm.interfaces.*;
-
+ 
+import com.RobotArm.interfaces.ICapteur;
 import lejos.hardware.motor.Motor;
-
-public class Moteur
-{
+import lejos.hardware.motor.NXTRegulatedMotor;
+import lejos.utility.Delay;
+ 
+ 
+ public class Moteur
+ {
 	private char port;
 	private double ratio;
 	private ICapteur capteur;
+	private NXTRegulatedMotor NXTMotor;
+	private int sensRotation; // Sens vers lequel tourner pour que le moteur arrive en butée de son capteur
+		
+	private static Moteur A, B, C;
+	public static int SENS_NEGATIF = -1, SENS_POSITIF = 1;
 	
-	
-	public Moteur(char port, double ratio)
-	{
+	private Moteur(char port, double ratio, ICapteur capteur, float vitesse, int acceleration, int sensRotation) {
 		this.port = port;
 		this.ratio = ratio;
+		this.capteur = capteur;
+		
+		this.setSensRotation(sensRotation);
+		
+		switch (this.port)
+		{
+			 case 'A':
+				NXTMotor = Motor.A;
+				break;
+			 case 'B':
+				NXTMotor = Motor.B;
+				break;
+			 case 'C':
+				NXTMotor = Motor.C;
+				break;
+		}
+		NXTMotor.setSpeed(vitesse);
+		NXTMotor.setAcceleration(acceleration);
+		NXTMotor.setStallThreshold(5, 250);
 	}
 	
 	
-	public void tourner(int degres)
+	public static void initMoteur(char port, float ratio, ICapteur capteur, float vitesse, int acceleration, int sensRotation)
 	{
 		switch(port)
 		{
+			case 'a':
 			case 'A':
-				Motor.A.rotate((int)Math.round(degres * ratio), true);		
+				if(A == null)
+					A = new Moteur(port, ratio, capteur, vitesse, acceleration, sensRotation);
 				break;
+			case 'b':
 			case 'B':
-				Motor.B.rotate((int)Math.round(degres * ratio), true);		
-				break;
+				if(B == null)
+					B = new Moteur(port, ratio, capteur, vitesse, acceleration, sensRotation);
+				break;				
+			case 'c':
 			case 'C':
-				Motor.C.rotate((int)Math.round(degres * ratio), true);
-				break;
+				if(C == null)
+					C = new Moteur(port, ratio, capteur, vitesse, acceleration, sensRotation);
+				break;				
 		}
-			
-		do {} while(capteur.getMesure() == 0);		
 	}
 	
 	
+	public static Moteur getInstance(char port)
+	{
+		switch(port)
+		{
+			case 'a':
+			case 'A':
+				return A;
+			case 'b':
+			case 'B':
+				return B;
+			case 'c':
+			case 'C':
+				return C;
+			default:
+				return null;
+		}
+	}
+	
+	
+	public static void stopAll()
+	{
+		Motor.A.stop();
+		Motor.B.stop();
+		Motor.C.stop();
+	}
+ 
+
+	public void tourner(int degres) {
+		
+		if(degres == 0 || degres == -0)
+			return;
+		
+		boolean aBouge = false; // Vrai si le moteur a commencé à tourner
+		float sens = Math.signum(degres);
+		System.out.println(String.format("Moteur %s tourne sur %d", port, degres));			
+		// On vérifie tout d'abord si le moteur peut tourner
+		// Conditions pour que moteur tourne :
+		// Si le moteur doit tourner vers un angle positif, alors il tourne vers le capteur.
+		// Dans ce cas, on vérifie si le capteur détecte le moteur en butée.
+		if(this.capteur.getMesure() == 1 && sens > 0.0f)
+		{
+			System.out.println(String.format("Moteur %s en butee", port));
+			return;
+		}
+		// S'il peut tourner, alors on le fait tourner.
+		this.NXTMotor.rotate((int)Math.round(degres * this.ratio * this.sensRotation), true);
+		// Tant que les conditions pour s'arrêter ne sont pas remplies, on attend
+		// Conditions pour s'arrêter : 
+		// - Le capteur lance un signal, et le sens de rotation est vers le capteur
+		// - OU le moteur s'est arrêté de tourner naturellement
+		// - OU le moteur est bloqué (stalled) et force pour tourner
+		Delay.msDelay(25);
+		do
+		{ } while ((this.capteur.getMesure() == 0 || sens < 0.0f) && (NXTMotor.isMoving()) && !NXTMotor.isStalled());
+		this.NXTMotor.stop();
+	}
+
+
 	public void stop()
 	{
-		switch(port)
-		{
-			case 'A':
-				Motor.A.stop();		
-				break;
-			case 'B':
-				Motor.B.stop();	
-				break;
-			case 'C':
-				Motor.C.stop();
-				break;
-		}
+		NXTMotor.stop();
 	}
-}
+
+
+	private void setSensRotation(int sensRotation) {
+		if(sensRotation != SENS_NEGATIF && sensRotation != SENS_POSITIF)
+			sensRotation = SENS_POSITIF;
+		this.sensRotation = sensRotation;
+	}
+
+ }
