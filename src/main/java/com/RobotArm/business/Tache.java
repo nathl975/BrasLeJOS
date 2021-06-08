@@ -1,15 +1,20 @@
  package com.RobotArm.business;
 
+import com.RobotArm.jsonAdapters.TacheAdapter;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
+
 import lejos.utility.Delay;
 
+@JsonAdapter(TacheAdapter.class)
 public class Tache {
 	private String id;
 	private String description;
 	private TypeAction typeAction;
-	int valeur;
-	Moteur moteur;
-	
-	public enum TypeAction { Attendre, Tourner; }
+	private int valeur;
+	private Moteur moteur;
+
+	public enum TypeAction {@SerializedName("Attendre") Attendre, @SerializedName("Tourner") Tourner; }
 
 	public Tache(TypeAction ta, int v) {
 		setTypeAction(ta);
@@ -42,7 +47,7 @@ public class Tache {
 	 * @param moteur
 	 */
 	public Tache(String id, String description, int valeur, char moteur)
-	{
+	{		
 		this.id = id;
 		this.description = description;
 		this.typeAction = TypeAction.Tourner;

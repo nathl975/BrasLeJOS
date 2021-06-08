@@ -50,6 +50,7 @@
 	}
 	
 	private void notifierObservateur() {
+		System.out.println("Gamme terminee");
 		this.executeur.notifierFinGamme();
 	}
 

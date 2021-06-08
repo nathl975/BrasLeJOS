@@ -1,9 +1,6 @@
  package com.RobotArm.business;
  
- import java.util.ArrayList;
- 
- 
- 
+ import java.util.ArrayList; 
  
  public class Gamme
  {
@@ -16,8 +13,6 @@
      this.description = d;
      this.listeOperations = new ArrayList<>();
    }
- 
- 
  
    
    public Gamme() {}

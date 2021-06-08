@@ -62,8 +62,8 @@ import lejos.utility.Delay;
 		CapteurCouleur.initCapteur('2');
 		CapteurPince.initCapteur();
 		
-		Moteur.initMoteur('A', 2, CapteurPince.getInstance(), vitesse, acceleration, Moteur.SENS_POSITIF);
-		Moteur.initMoteur('B', 3, CapteurCouleur.getInstance(), vitesse, acceleration, Moteur.SENS_NEGATIF);
-		Moteur.initMoteur('C', 5, CapteurContact.getInstance(), vitesse, acceleration, Moteur.SENS_POSITIF);
+		Moteur.initMoteur('B', 3, CapteurCouleur.getInstance(), vitesse, acceleration, Moteur.SENS_NEGATIF); // Levée
+		Moteur.initMoteur('C', 5, CapteurContact.getInstance(), vitesse, acceleration, Moteur.SENS_POSITIF); // Rotation
+		Moteur.initMoteur('D', 2, CapteurPince.getInstance(), vitesse, acceleration, Moteur.SENS_POSITIF); // Pince
 	}
 }

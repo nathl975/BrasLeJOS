@@ -33,6 +33,9 @@ import java.io.PrintWriter;
 	private IPilote pilote;
 	private Future execThread;
 	private ExecutorService execService = Executors.newSingleThreadExecutor();
+	
+	private BufferedReader in;
+	private BufferedWriter out;
 
 	
 	public void ecouter() {
@@ -42,8 +45,6 @@ import java.io.PrintWriter;
 			{
 				try
 				{
-					BufferedReader in;
-					
 					socket = new ServerSocket(port);
 					System.out.println(String.format("Ecoute sur le port : %d", port));							
 					
@@ -51,6 +52,7 @@ import java.io.PrintWriter;
 					{
 						client = socket.accept();
 						in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+						out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
 						while(!client.isClosed())
 						{
 							String s ="";
@@ -114,7 +116,6 @@ import java.io.PrintWriter;
 		{			
 			if(client.isConnected())
 			{
-				BufferedWriter out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
 				out.write(String.format("%s\n", message));
 				out.flush();				
 			}

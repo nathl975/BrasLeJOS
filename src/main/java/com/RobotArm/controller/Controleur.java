@@ -2,6 +2,7 @@
 
  import com.RobotArm.business.Gamme;
 import com.RobotArm.business.Moteur;
+import com.RobotArm.business.Tache;
 import com.RobotArm.business.ThreadGamme;
 import com.RobotArm.business.Utilisateur;
 import com.RobotArm.interfaces.IEtatMode;
@@ -13,7 +14,8 @@ import com.RobotArm.interfaces.IEtatMode;
  import com.google.gson.GsonBuilder;
  import com.google.gson.JsonElement;
  import com.google.gson.JsonObject;
- import com.google.gson.JsonParser;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import lejos.hardware.motor.Motor;
 import lejos.utility.Delay;
 
@@ -72,9 +74,9 @@ import java.sql.SQLException;
 	 */
 	private void initPositionMoteurs()
 	{
-		Moteur.getInstance('A').tourner(360);
-		Moteur.getInstance('A').stop();
-		System.out.println("Moteur A fini");
+		Moteur.getInstance('D').tourner(360);
+		Moteur.getInstance('D').stop();
+		System.out.println("Moteur D fini");
 
 		Moteur.getInstance('B').tourner(360);
 		Moteur.getInstance('B').stop();		
@@ -180,9 +182,11 @@ import java.sql.SQLException;
 			else
 			{
 				pilotage.envoyerMessage("Vous n'êtes pas connecté !");
+				System.out.println("non connecté");
 				return;
 			}
 		}
+		
 		
 		switch (action) {
 			case "co":
@@ -191,41 +195,38 @@ import java.sql.SQLException;
 			case "deco":
 				utilisateurConnecte = null;
 				pilotage.envoyerMessage("Vous etes bien deconnecte.");
+				break;
 			case "newG":				
-				try {
-					Gamme g = (Gamme)gson.fromJson((JsonElement)root.get("gamme").getAsJsonObject(), Gamme.class);
-					
-					if (g != null) {
-						
-						this.persistance.creerGamme(g);
-						break;
+				try
+				{
+					Gamme g = interpreterGamme(root);
+					if(g != null)
+					{
+						System.out.println(String.format("Nouvelle gamme créée : %s", g.getId()));
+						listeGammes.put(g.getId(), g);
 					}
-					throw new Exception("Informations invalides");
+					else throw new Exception();
 				}
 				catch (Exception e) {
 					
 					this.pilotage.envoyerMessage("La gamme n'a pas pu etre creee.");
 					sauverRapport(e.getMessage());
-					break;
 				}
-			
+				break;
 			case "modG":
 				try {
 					Gamme g = (Gamme)gson.fromJson((JsonElement)root.get("gamme").getAsJsonObject(), Gamme.class);
 					if (g != null) {
 						
 						this.persistance.modifierGamme(g);
-						break;
 					}
 					throw new Exception("Informations invalides");
 				}
-				catch (Exception e) {
-					
+				catch (Exception e) {					
 					this.pilotage.envoyerMessage("La gamme n'a pas pu etre modifiee.");
 					sauverRapport(e.getMessage());
-					break;
 				}
-			
+				break;
 			case "delG":
 				try {
 					String g = root.get("idGamme").getAsString();
@@ -233,7 +234,6 @@ import java.sql.SQLException;
 						
 						this.persistance.supprimerGamme(g);
 						this.listeGammes.remove(g);
-						break;
 					}
 					throw new Exception("Informations invalides");
 				}
@@ -241,9 +241,8 @@ import java.sql.SQLException;
 					
 					this.pilotage.envoyerMessage("La gamme n'a pas pu etre supprimee.");
 					sauverRapport(e.getMessage());
-					break;
-				}
-			
+				}			
+				break;
 			case "newU":
 				try {
 					login = root.get("login").getAsString();
@@ -251,7 +250,6 @@ import java.sql.SQLException;
 					if (login != null && pwd != null) {
 						
 						this.persistance.creerCompte(login, pwd);
-						break;
 					}
 					throw new Exception("Informations invalides");
 				}
@@ -259,8 +257,8 @@ import java.sql.SQLException;
 					
 					this.pilotage.envoyerMessage("Le compte n'a pas pu etre cree.");
 					sauverRapport(e.getMessage());
-					break;
 				}
+				break;
 			case "delU":
 				try {
 					this.persistance.supprimerCompte(root.get("login").getAsString());
@@ -286,8 +284,7 @@ import java.sql.SQLException;
 				if(idGamme == null)
 					throw new NullPointerException("L'id de la gamme à exécuter est nul");
 				executerGamme(idGamme.getAsString());
-				break;
-			
+				break;			
 			case "logs":
 				if (root.get("date").getAsString() != null) {
 					ArrayList<String> rapports = filtrerLog(new Date(root.get("d").getAsString())); break;
@@ -317,15 +314,25 @@ import java.sql.SQLException;
 		System.out.println("Mode panne actif.");
 	}
 	
-	
-	public void reprisePanne()
-	{
-		
-	}
-
 
 	
 	public boolean gammeEnCours() {
 		return this.execGammeService.gammeEnCours();
+	}
+	
+	
+	private Gamme interpreterGamme(JsonObject json)
+	{
+		try
+		{
+			GsonBuilder builder = new GsonBuilder();
+			Gson gson = builder.create();
+			Gamme g = gson.fromJson(json.get("gamme"), Gamme.class);
+			return g;
+		} catch(JsonParseException e)
+		{
+			e.printStackTrace();
+			return null;
+		}
 	}
  }

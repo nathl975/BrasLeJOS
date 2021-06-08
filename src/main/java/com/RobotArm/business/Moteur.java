@@ -14,7 +14,7 @@ import lejos.utility.Delay;
 	private NXTRegulatedMotor NXTMotor;
 	private int sensRotation; // Sens vers lequel tourner pour que le moteur arrive en butée de son capteur
 		
-	private static Moteur A, B, C;
+	private static Moteur A, B, C, D;
 	public static int SENS_NEGATIF = -1, SENS_POSITIF = 1;
 	
 	private Moteur(char port, double ratio, ICapteur capteur, float vitesse, int acceleration, int sensRotation) {
@@ -28,14 +28,21 @@ import lejos.utility.Delay;
 		{
 			 case 'A':
 				NXTMotor = Motor.A;
+				NXTMotor.setStallThreshold(1, 50);				
 				break;
 			 case 'B':
 				NXTMotor = Motor.B;
+				NXTMotor.setStallThreshold(5, 250);
 				break;
 			 case 'C':
 				NXTMotor = Motor.C;
+				NXTMotor.setStallThreshold(5, 250);
 				break;
-		}
+			 case 'D':
+				NXTMotor = Motor.D;
+				NXTMotor.setStallThreshold(5, 250);
+				break;
+}
 		NXTMotor.setSpeed(vitesse);
 		NXTMotor.setAcceleration(acceleration);
 		NXTMotor.setStallThreshold(5, 250);
@@ -61,6 +68,11 @@ import lejos.utility.Delay;
 				if(C == null)
 					C = new Moteur(port, ratio, capteur, vitesse, acceleration, sensRotation);
 				break;				
+			case 'd':
+			case 'D':
+				if(D == null)
+					D = new Moteur(port, ratio, capteur, vitesse, acceleration, sensRotation);
+				break;				
 		}
 	}
 	
@@ -78,6 +90,9 @@ import lejos.utility.Delay;
 			case 'c':
 			case 'C':
 				return C;
+			case 'd':
+			case 'D':
+				return D;				
 			default:
 				return null;
 		}
@@ -89,6 +104,11 @@ import lejos.utility.Delay;
 		Motor.A.stop();
 		Motor.B.stop();
 		Motor.C.stop();
+		Motor.D.stop();
+		if(A != null) A.stop();
+		if(B != null) B.stop();
+		if(C != null) C.stop();
+		if(D != null) D.stop();
 	}
  
 
