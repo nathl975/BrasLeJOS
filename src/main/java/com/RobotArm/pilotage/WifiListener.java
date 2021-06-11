@@ -17,7 +17,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
  import java.net.ServerSocket;
  import java.net.Socket;
- import java.util.ArrayList;
+import java.net.SocketException;
+import java.util.ArrayList;
  import java.util.concurrent.ExecutorService;
  import java.util.concurrent.Executors;
  import java.util.concurrent.Future;
@@ -39,7 +40,7 @@ import java.io.PrintWriter;
 
 	
 	public void ecouter() {
-		Future<?> execThread = this.execService.submit(new Runnable()
+		this.execThread = this.execService.submit(new Runnable()
 		{			
 			public void run()
 			{
@@ -72,6 +73,9 @@ import java.io.PrintWriter;
 						notifierDeconnexion();						
 					}		
 					System.out.println("Wifi terminée");
+				} catch(SocketException e)
+				{
+					System.out.println("Arret du socket serveur.");
 				} catch (Exception e)
 				{							
 					e.printStackTrace();
@@ -94,22 +98,13 @@ import java.io.PrintWriter;
 		notifierPilote(new Gson().toJson(root));
 	}
  
- 
- 
- 
 	
 	public void afficherEtatSysteme() {}
- 
- 
- 
  
 	
 	public void afficherHistorique(ArrayList<String> rapports) {}
  
  
- 
- 
-	
 	public void envoyerMessage(String message)
 	{
 		try
@@ -124,12 +119,12 @@ import java.io.PrintWriter;
 		}
 	}
  
- 
- 
- 
 	
 	public void stop() {
 		this.wifiOn = false;
+		fermerConnexion();
+		this.execThread.cancel(true);
+		this.execService.shutdownNow();
 	}
  
 	

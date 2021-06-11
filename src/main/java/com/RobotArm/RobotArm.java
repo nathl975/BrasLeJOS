@@ -44,6 +44,7 @@ import lejos.utility.Delay;
 			System.out.println("Une erreur inconnue est survenue, impossible de demarrer !");
 			e.printStackTrace();
 		} 
+		
 		pilotage.fermerConnexion();
 		
 		pilotage = null;

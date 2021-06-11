@@ -34,6 +34,7 @@ import java.sql.SQLException;
 	IPilotage pilotage;
 	ThreadGamme execGammeService;
 	Gson gson;
+	boolean stop;
 	
 	public Controleur(IPersistance pe, IPilotage pi) throws Exception {
 		this.persistance = pe;
@@ -43,6 +44,7 @@ import java.sql.SQLException;
 		this.modeFonctionnement = new ModeManuel();
 		this.execGammeService = new ThreadGamme(this);
 		this.gson = (new GsonBuilder()).create();
+		this.stop = false;
 		
 		initRobot();
 		initGamme();
@@ -52,7 +54,7 @@ import java.sql.SQLException;
 	public void demarrer() {
 		System.out.println("Demarrage du controleur");
 		this.pilotage.ecouter();
-		while (true) // Thread principal
+		while (!stop) // Thread principal
 		{
 			while(execGammeService.gammeEnCours()); // Attendre que l'exécution soit possible
 			
@@ -300,6 +302,9 @@ import java.sql.SQLException;
 				System.out.println("Ping reçu");
 				this.pilotage.envoyerMessage("Pong !");
 				break;
+			case "stop":
+				stopRobot();
+				break;
 			default:
 				System.out.println(String.format("Commande inconnue : %s", action));
 				break;
@@ -310,7 +315,7 @@ import java.sql.SQLException;
 	
 	public void declencherPanne() {
 		this.modeFonctionnement = new ModePanne();
-		this.execGammeService.stop();
+		this.execGammeService.panne();
 		System.out.println("Mode panne actif.");
 	}
 	
@@ -334,5 +339,13 @@ import java.sql.SQLException;
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	
+	private void stopRobot()
+	{
+		this.pilotage.stop();
+		this.execGammeService.stop();		
+		this.stop = true;
 	}
  }

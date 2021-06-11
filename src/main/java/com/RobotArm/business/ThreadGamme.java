@@ -65,10 +65,18 @@
 		return gammeEnExec;
 	}
 	
-	public void stop()
+	public void panne()
 	{
 		stopper = true;
-		Moteur.stopAll();
-		
+		Moteur.stopAll();		
+	}
+	
+	
+	public void stop()
+	{
+		panne();
+		if(this.execThread != null)
+			this.execThread.cancel(true);
+		this.execService.shutdownNow();
 	}
 }
