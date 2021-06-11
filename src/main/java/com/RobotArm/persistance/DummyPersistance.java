@@ -1,20 +1,27 @@
  package com.RobotArm.persistance;
- 
- import com.RobotArm.business.*;
- import com.RobotArm.interfaces.IPersistance;
- import java.sql.SQLException;
- import java.util.ArrayList;
- import java.util.HashMap;
 
+import com.RobotArm.business.*;
+import com.RobotArm.interfaces.IPersistance;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+
+/**
+ * Classe de persistance factice, qui permet de simuler une persistance.
+ * @author Alvin
+ *
+ */
+//TODO : implémenter une persistance, sous forme de fichier XML, par exemple
 public class DummyPersistance implements IPersistance
 {
-	public void creerGamme(Gamme g) throws SQLException {}
+	public void creerGamme(Gamme g) {}
 	
-	public void modifierGamme(Gamme g) throws SQLException {}
+	public void modifierGamme(Gamme g) {}
 	
-	public void supprimerGamme(String id) throws SQLException {}
+	public void supprimerGamme(String id) {}
 	
-	public HashMap<String, Gamme> recupererGammes() throws SQLException
+	public HashMap<String, Gamme> recupererGammes()
 	{
 		HashMap<String, Gamme> liste = new HashMap<String, Gamme>();
 		Gamme g;
@@ -28,9 +35,9 @@ public class DummyPersistance implements IPersistance
 		}
 		return liste;
 	}
- 
+
 	
-	public Gamme recupererGammeDefaut() throws Exception {
+	public Gamme recupererGammeDefaut() {
 		Gamme g = new Gamme("1", "Gamme defaut");
 		
 		Operation ope = new Operation("1", "Gamme défaut");		
@@ -57,42 +64,40 @@ public class DummyPersistance implements IPersistance
 		ope.AjouterTache(t5);
 		ope.AjouterTache(t4);		
 		
-		 // Attendre
+		// Attendre
 		ope.AjouterTache(t7);
 		
 		g.AjouterOperation(ope);		
 		return g;
 	}
- 
+
 	
 	public void sauverLog(String log) {}
- 
- 
- 
+
 	
-	public ArrayList<String> recupererLogs() throws SQLException {
+	public ArrayList<String> recupererLogs() {
 		return null;
 	}
- 
+
 	
-	public String getConfig(String nomConfig) throws SQLException {
+	public String getConfig(String nomConfig) {
 		switch (nomConfig) {
-		 
-		 case "vitesseMoteur":
+		
+		case "vitesseMoteur":
 			return String.valueOf(120);
-		 case "accelerationMoteur":
+		case "accelerationMoteur":
 			return String.valueOf(360);
-		 case "rendementMotA":
+		case "rendementMotA":
 			return String.valueOf(2);
-		 case "rendementMotB":
+		case "rendementMotB":
 			return String.valueOf(5);
-		 case "rendementMotC":
+		case "rendementMotC":
 			return String.valueOf(3);
-		} 
+		}
 		return "";
 	}
 	
-	public void creerCompte(String login, String pwd) throws SQLException {}
+	public void creerCompte(String login, String pwd) {}
 	
 	
 	public Utilisateur trouverCompte(String l, String p)
@@ -112,5 +117,5 @@ public class DummyPersistance implements IPersistance
 	}
 	
 	
-	public void supprimerCompte(String login) throws SQLException {}
- }
+	public void supprimerCompte(String login) {}
+}

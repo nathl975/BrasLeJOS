@@ -2,8 +2,11 @@
  
  import java.util.ArrayList;
  
- 
- 
+ /**
+  * Classe représentant une opération
+  * @author Alvin
+  *
+  */
  public class Operation
  {
    private String id;

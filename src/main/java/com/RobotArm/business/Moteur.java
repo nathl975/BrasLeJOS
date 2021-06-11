@@ -5,7 +5,11 @@ import lejos.hardware.motor.Motor;
 import lejos.hardware.motor.NXTRegulatedMotor;
 import lejos.utility.Delay;
  
- 
+ /**
+  * Classe représentant un moteur du robot
+  * @author Alvin
+  *
+  */
  public class Moteur
  {
 	private char port;
@@ -17,6 +21,16 @@ import lejos.utility.Delay;
 	private static Moteur A, B, C, D;
 	public static int SENS_NEGATIF = -1, SENS_POSITIF = 1;
 	
+	/** 
+	 * Constructeur privé pour les 4 instances uniques de la classe
+	 * @param port Port sur lequel le moteur à instancier est branché
+	 * @param ratio Ratio de force entre le moteur et la fin de la chaîne d'engrenages
+	 * @param capteur Capteur lié au moteur
+	 * @param vitesse Vitesse du moteur
+	 * @param acceleration Accélération du moteur
+	 * @param sensRotation Sens de rotation du moteur, permet d'inverser le sens naturel pour que le moteur tourne vers son capteur avec un angle positif, et s'éloigne du capteur avec un angle négatif 
+	 * 
+	 */
 	private Moteur(char port, double ratio, ICapteur capteur, float vitesse, int acceleration, int sensRotation) {
 		this.port = port;
 		this.ratio = ratio;
@@ -49,6 +63,15 @@ import lejos.utility.Delay;
 	}
 	
 	
+	/**
+	 * Permet d'initialiser une instance d'un des 4 moteurs de la classe Singleton Moteur
+	 * @param port Port sur lequel le moteur à instancier est branché
+	 * @param ratio Ratio de force entre le moteur et la fin de la chaîne d'engrenages
+	 * @param capteur Capteur lié au moteur
+	 * @param vitesse Vitesse du moteur
+	 * @param acceleration Accélération du moteur
+	 * @param sensRotation Sens de rotation du moteur, permet d'inverser le sens naturel pour que le moteur tourne vers son capteur avec un angle positif, et s'éloigne du capteur avec un angle négatif 
+	 */
 	public static void initMoteur(char port, float ratio, ICapteur capteur, float vitesse, int acceleration, int sensRotation)
 	{
 		switch(port)
@@ -76,7 +99,10 @@ import lejos.utility.Delay;
 		}
 	}
 	
-	
+	/**
+	 * @param port Port du moteur
+	 * @return Instance correspondant au port donné
+	 */
 	public static Moteur getInstance(char port)
 	{
 		switch(port)
@@ -98,7 +124,9 @@ import lejos.utility.Delay;
 		}
 	}
 	
-	
+	/**
+	 * Arrête immédiatement tous les moteurs
+	 */
 	public static void stopAll()
 	{
 		Motor.A.stop();
@@ -111,7 +139,10 @@ import lejos.utility.Delay;
 		if(D != null) D.stop();
 	}
  
-
+	/**
+	 * Permet de faire tourner un moteur sur un angle 
+	 * @param degres Angle de rotation
+	 */
 	public void tourner(int degres) {
 		
 		if(degres == 0 || degres == -0)

@@ -1,5 +1,10 @@
 package com.RobotArm.business;
 
+/**
+ * Classe représentant un utilisateur
+ * @author Alvin
+ *
+ */
 public class Utilisateur {
 	private String login;
 	private String pwd;

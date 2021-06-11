@@ -26,6 +26,7 @@ import lejos.utility.Delay;
  		
 		try
 		{
+			// Création et instanciation du controleur et des différents modules
 			InitHardware();
 			persistance = (IPersistance)new DummyPersistance();
 			pilotage = (IPilotage)new WifiListener();
@@ -57,6 +58,8 @@ import lejos.utility.Delay;
 	
 	private static void InitHardware()
 	{
+		// Configuration des moteurs et des capteurs.
+		//TODO Les valeurs sont écrites en dur, et devraient être plutôt écrites dans un fichier externe.
 		float vitesse = 120;
 		int acceleration = 360;
 		CapteurContact.initCapteur('1');

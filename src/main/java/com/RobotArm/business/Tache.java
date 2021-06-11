@@ -7,6 +7,12 @@ import com.google.gson.annotations.SerializedName;
 import lejos.utility.Delay;
 
 @JsonAdapter(TacheAdapter.class)
+
+/**
+ * Classe représentant une tâche
+ * @author Alvin
+ *
+ */
 public class Tache {
 	private String id;
 	private String description;
