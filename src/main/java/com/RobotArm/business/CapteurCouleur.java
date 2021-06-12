@@ -7,7 +7,11 @@ import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.hardware.sensor.SensorMode;
 import lejos.robotics.Color;
 
-
+/**
+ * Capteur relié à la levée du bras
+ * @author Alvin
+ *
+ */
 public class CapteurCouleur implements ICapteur
 {
 	private EV3ColorSensor sensor;

@@ -11,7 +11,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.annotations.JsonAdapter;
 
-public class TacheAdapter implements JsonDeserializer<Tache>{
+/**
+ * Classe permettant de convertir un objet JSON représentant une tâche, en tâche.
+ * Assure la compatibilité entre la classe Tâche EV3 et la classe Tâche Android.
+ * @author Alvin
+ *
+ */
+public class TacheAdapter implements JsonDeserializer<Tache>
+{
 	public Tache deserialize(JsonElement arg0, Type arg1, JsonDeserializationContext arg2) throws JsonParseException
 	{
 		JsonObject json = arg0.getAsJsonObject();
@@ -31,5 +38,4 @@ public class TacheAdapter implements JsonDeserializer<Tache>{
 		
 		return t;
 	}
-
 }

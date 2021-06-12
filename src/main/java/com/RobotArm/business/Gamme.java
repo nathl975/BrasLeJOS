@@ -2,6 +2,11 @@
  
  import java.util.ArrayList; 
  
+ /**
+  * Classe représentant une gamme
+  * @author Alvin
+  *
+  */
  public class Gamme
  {
    String id;

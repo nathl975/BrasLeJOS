@@ -24,6 +24,12 @@ import java.sql.SQLException;
  import java.util.Date;
  import java.util.HashMap;
 
+ /**
+  * Classe pilote centrale de l'application. Tous les messages entre les classes 
+  * transitent par cette classe, qui possède la plupart des éléments logiques de contrôle et de décision.
+  * @author Alvin
+  *
+  */
  public class Controleur implements IExecuteur, IPilote
  {
 	HashMap<String, Gamme> listeGammes;
@@ -36,6 +42,12 @@ import java.sql.SQLException;
 	Gson gson;
 	boolean stop;
 	
+	/**
+	 * Constructeur de la classe
+	 * @param pe
+	 * @param pi
+	 * @throws Exception
+	 */
 	public Controleur(IPersistance pe, IPilotage pi) throws Exception {
 		this.persistance = pe;
 		this.pilotage = pi;
@@ -50,7 +62,9 @@ import java.sql.SQLException;
 		initGamme();
 	}
 
-	
+	/**
+	 * Démarre le contrôleur et le module de pilotage, et bloque le thread principal
+	 */
 	public void demarrer() {
 		System.out.println("Demarrage du controleur");
 		this.pilotage.ecouter();
@@ -65,7 +79,10 @@ import java.sql.SQLException;
 		}
 	}
 
-
+	/**
+	 * Initialise la position des moteurs
+	 * @throws Exception
+	 */
 	private void initRobot() throws Exception {
 		initPositionMoteurs();
 	}
@@ -90,23 +107,28 @@ import java.sql.SQLException;
 	}
 
 
-	
+	/**
+	 * Récupère la liste des gammes et la gamme par défaut
+	 * @throws Exception
+	 */
 	private void initGamme() throws Exception {
 		this.listeGammes = this.persistance.recupererGammes();
 		this.gammeDefaut = this.persistance.recupererGammeDefaut();
 	}
 
 
-	
+	/**
+	 * Sauvegarde un log
+	 * @param r
+	 */
 	public void sauverRapport(String r) {
-		try {
-			this.persistance.sauverLog(r);
-		} catch (SQLException e) {
-			System.out.println(e.getMessage());
-		}
+		this.persistance.sauverLog(r);
 	}
 
-	
+	/**
+	 * Demadne l'exécution d'une gamme. S'il y a une gamme en cours, la gamme est refusée.
+	 * @param id ID de la gamme à exécuter
+	 */
 	public void executerGamme(String id) {
 		if (this.modeFonctionnement.peutExecuter())
 		{
@@ -124,26 +146,30 @@ import java.sql.SQLException;
 		}
 	}
 
-	
+	/**
+	 * Implémentation de la classe IExecuteur, notifie le contrôleur de la fin d'une gamme
+	 */
 	public void notifierFinGamme() {
 		pilotage.envoyerMessage("Gamme terminee !");
 		
 		this.initPositionMoteurs();
 	}
 
-
+	/**
+	 * Filtre les logs par date de sauvegarde
+	 * @param date Date de filtrage
+	 * @return Liste des logs d'une date donnée
+	 */
 	public ArrayList<String> filtrerLog(Date date) {
-		try {
-			ArrayList<String> rapports = this.persistance.recupererLogs();
-			return rapports;
-		} catch (SQLException e) {
-			
-			e.printStackTrace();
-			return null;
-		}
+		ArrayList<String> rapports = this.persistance.recupererLogs();
+		return rapports;
 	}
 
-	
+	/**
+	 * Appelée lorsque le pilotage reçoit un message de l'opérateur. Détermine le type 
+	 * du message et l'action à mener en conséquence.
+	 * @param msg Message reçu
+	 */
 	public void notifierMessage(String msg) {
 		JsonObject root = new JsonObject();
 
@@ -189,7 +215,8 @@ import java.sql.SQLException;
 			}
 		}
 		
-		
+		// On fait un Switch-Case sur la valeur du champ "Action" du message reçu.
+		// Les messages et leurs arguments sont décrits dans la documentation du logiciel.
 		switch (action) {
 			case "co":
 				pilotage.envoyerMessage(String.format("Vous êtes déjà connecté sous %s", utilisateurConnecte.getLogin()));
@@ -262,11 +289,7 @@ import java.sql.SQLException;
 				}
 				break;
 			case "delU":
-				try {
-					this.persistance.supprimerCompte(root.get("login").getAsString());
-				} catch (SQLException e) {
-					System.out.println("Erreur lors de la suppression du compte");
-				}
+				this.persistance.supprimerCompte(root.get("login").getAsString());
 				break;
 			case "auto":
 				if(this.modeFonctionnement.getClass().equals(ModePanne.class))
@@ -291,12 +314,8 @@ import java.sql.SQLException;
 				if (root.get("date").getAsString() != null) {
 					ArrayList<String> rapports = filtrerLog(new Date(root.get("d").getAsString())); break;
 				}
-				try {
-					ArrayList<String> rapports = this.persistance.recupererLogs();
-					this.pilotage.afficherHistorique(rapports);
-				} catch (SQLException e) {
-					System.out.println("Erreur lors de la recuperation des logs");
-				}
+				ArrayList<String> rapports = this.persistance.recupererLogs();
+				this.pilotage.afficherHistorique(rapports);
 				break;
 			case "ping":
 				System.out.println("Ping reçu");
@@ -325,7 +344,13 @@ import java.sql.SQLException;
 		return this.execGammeService.gammeEnCours();
 	}
 	
-	
+	/**
+	 * Transforme un String JSON en objet Gamme
+	 * La désérialisation en objet est un peu spéciale pour la classe Tâche, et nécessite
+	 * de le faire manuellement.
+	 * @param json Objet JSON à convertir
+	 * @return Gamme convertie
+	 */
 	private Gamme interpreterGamme(JsonObject json)
 	{
 		try
@@ -341,7 +366,10 @@ import java.sql.SQLException;
 		}
 	}
 	
-	
+	/**
+	 * Stoppe les services d'exécution et de pilotage, puis le contrôleur,
+	 * en vue d'arrêter le robot.
+	 */
 	private void stopRobot()
 	{
 		this.pilotage.stop();
