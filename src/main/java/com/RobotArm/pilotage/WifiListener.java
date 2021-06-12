@@ -30,7 +30,7 @@ public class WifiListener
 	private ServerSocket socket;
 	private Socket client;
 	private boolean wifiOn = true;
-	private int port = 80;
+	private int port = 2048;
 	private IPilote pilote;
 	private Future execThread;
 	private ExecutorService execService = Executors.newSingleThreadExecutor();
