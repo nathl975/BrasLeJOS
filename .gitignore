@@ -1,1 +1,10 @@
+# Java
 target
+out
+bin/*
+
+# IntelliJ IDEA
+.idea
+
+# Eclipse
+.settings
