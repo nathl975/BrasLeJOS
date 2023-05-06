@@ -37,13 +37,9 @@ public class WifiListener
                 // En cas d'erreur, on interrompt le thread
                 socket = new ServerSocket(port);
 
-                NetworkInterface wlan = NetworkInterface.getByName("wlan0");
-                Enumeration<InetAddress> adresses = wlan.getInetAddresses();
-                while (adresses.hasMoreElements()) {
-                    InetAddress address = adresses.nextElement();
-                    System.out.println("Adresse pour la connexion :");
-                    System.out.println(address.getHostName());
-                }
+                // On affiche l'adresse IP pour la retrouver sur l'application
+                System.out.println("Adresse pour la connexion :");
+                this.printAdresseIP();
 
                 // Tant que le robot doit écouter, et que le socket n'est pas fermé
                 while (wifiOn && !socket.isClosed()) {
@@ -109,9 +105,9 @@ public class WifiListener
     }
 
     /**
-     * Envoie au socket connecté un message JSON stringifié contenant des informations
+     * Envoie au socket connecté un message JSON contenant des informations
      *
-     * @param message Message envoyé, chaéne en format JSON ou texte
+     * @param message Message envoyé, chaîne en format JSON ou texte
      */
     public void envoyerMessage(String message) {
         try {
@@ -125,7 +121,7 @@ public class WifiListener
     }
 
     /**
-     * Arréte le thread d'écoute et le clét
+     * Arrête le thread d'écoute et le clot
      */
     public void stop() {
         this.wifiOn = false;
@@ -135,7 +131,7 @@ public class WifiListener
     }
 
     /**
-     * Ferme la connexion avec le client, et ferme ensuite le socket d'écoute
+     * Ferme la connexion avec le client et ferme ensuite le socket d'écoute
      */
     public void fermerConnexion() {
         try {
@@ -153,5 +149,15 @@ public class WifiListener
      */
     public void ajoutListener(IPilote listener) {
         this.pilote = listener;
+    }
+
+    private void printAdresseIP () throws SocketException {
+        NetworkInterface wlan = NetworkInterface.getByName("wlan0");
+        Enumeration<InetAddress> adresses = wlan.getInetAddresses();
+
+        while (adresses.hasMoreElements()) {
+            InetAddress address = adresses.nextElement();
+            System.out.println(address.getHostName());
+        }
     }
 }
