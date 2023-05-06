@@ -72,9 +72,9 @@ public class Controller implements IExecuteur, IPilote {
      * Positionne tous les moteurs en butée.
      */
     private void initPositionMoteurs() {
-        Moteur.getInstance('D').tourner(360);
-        Moteur.getInstance('D').stop();
-        System.out.println("Moteur D fini");
+        Moteur.getInstance('A').tourner(360);
+        Moteur.getInstance('A').stop();
+        System.out.println("Moteur A fini");
 
         Moteur.getInstance('B').tourner(360);
         Moteur.getInstance('B').stop();
