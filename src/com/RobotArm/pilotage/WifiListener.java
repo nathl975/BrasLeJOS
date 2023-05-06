@@ -38,8 +38,8 @@ public class WifiListener
                 socket = new ServerSocket(port);
 
                 // On affiche l'adresse IP pour la retrouver sur l'application
-                System.out.println("Adresse pour la connexion :");
-                this.printAdresseIP();
+                System.out.println("Adresse du robot:");
+                this.printAdresseInet();
 
                 // Tant que le robot doit écouter, et que le socket n'est pas fermé
                 while (wifiOn && !socket.isClosed()) {
@@ -151,7 +151,7 @@ public class WifiListener
         this.pilote = listener;
     }
 
-    private void printAdresseIP () throws SocketException {
+    private void printAdresseInet () throws SocketException {
         NetworkInterface wlan = NetworkInterface.getByName("wlan0");
         Enumeration<InetAddress> adresses = wlan.getInetAddresses();
 
