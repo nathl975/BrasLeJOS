@@ -1,10 +1,14 @@
 # Java
 target
 out
-bin/*
+bin
+RobotArm.jar
 
 # IntelliJ IDEA
 .idea
+BrasAtricule.iml
 
 # Eclipse
 .settings
+.classpath
+.project
