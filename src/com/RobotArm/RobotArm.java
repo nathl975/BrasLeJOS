@@ -4,40 +4,30 @@ import com.RobotArm.business.CapteurContact;
 import com.RobotArm.business.CapteurCouleur;
 import com.RobotArm.business.CapteurPince;
 import com.RobotArm.business.Moteur;
-import com.RobotArm.controller.Controleur;
+import com.RobotArm.controller.Controller;
 import com.RobotArm.interfaces.IPersistance;
 import com.RobotArm.interfaces.IPilotage;
-import com.RobotArm.interfaces.IPilote;
 import com.RobotArm.persistance.DummyPersistance;
 import com.RobotArm.pilotage.WifiListener;
 
-import java.io.IOException;
-import java.sql.SQLException;
-
 
 public class RobotArm {
-    private static IPersistance persistance;
     private static IPilotage pilotage;
-    private static Controleur controleur;
 
     public static void main(String[] args) {
         System.out.println("Debut du programme");
 
+        Controller controller;
+        IPersistance persistance;
         try {
             // Création et instanciation du contrôleur et des différents modules
             InitHardware();
-            persistance = (IPersistance) new DummyPersistance();
-            pilotage = (IPilotage) new WifiListener();
-            controleur = new Controleur(persistance, pilotage);
-            pilotage.ajoutListener((IPilote) controleur);
+            persistance = new DummyPersistance();
+            pilotage = new WifiListener();
+            controller = new Controller(persistance, pilotage);
+            pilotage.ajoutListener(controller);
 
-            controleur.demarrer();
-        } catch (IOException e) {
-            System.out.println("Une erreur bloquane est survenue, impossible de demarrer !");
-            e.printStackTrace();
-        } catch (SQLException e) {
-            System.out.println("Une erreur SQL bloquante est survenue, impossible de demarrer !");
-            e.printStackTrace();
+            controller.start();
         } catch (Exception e) {
             System.out.println("Une erreur inconnue est survenue, impossible de demarrer !");
             e.printStackTrace();
@@ -46,8 +36,6 @@ public class RobotArm {
         pilotage.fermerConnexion();
 
         pilotage = null;
-        persistance = null;
-        controleur = null;
         System.gc();
         System.out.println("Fin du programme");
     }

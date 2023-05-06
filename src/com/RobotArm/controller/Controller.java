@@ -13,11 +13,11 @@ import java.util.HashMap;
 
 /**
  * Classe pilote centrale de l'application. Tous les messages entre les classes
- * transitent par cette classe, qui posséde la plupart des éléments logiques de contréle et de décision.
+ * transitent par cette classe, qui possède la plupart des éléments logiques de contrôle et de décision.
  *
  * @author Alvin
  */
-public class Controleur implements IExecuteur, IPilote {
+public class Controller implements IExecuteur, IPilote {
     HashMap<String, Gamme> listeGammes;
     Gamme gammeDefaut;
     Utilisateur utilisateurConnecte;
@@ -30,12 +30,8 @@ public class Controleur implements IExecuteur, IPilote {
 
     /**
      * Constructeur de la classe
-     *
-     * @param pe
-     * @param pi
-     * @throws Exception
      */
-    public Controleur(IPersistance pe, IPilotage pi) throws Exception {
+    public Controller(IPersistance pe, IPilotage pi) {
         this.persistance = pe;
         this.pilotage = pi;
         this.listeGammes = new HashMap<>();
@@ -50,27 +46,24 @@ public class Controleur implements IExecuteur, IPilote {
     }
 
     /**
-     * Démarre le contréleur et le module de pilotage, et bloque le thread principal
+     * Démarre le contrôleur et le module de pilotage et bloque le thread principal
      */
-    public void demarrer() {
-        System.out.println("Demarrage du controleur");
+    public void start() {
         this.pilotage.ecouter();
         while (!stop) // Thread principal
         {
             while (execGammeService.gammeEnCours()) ; // Attendre que l'exécution soit possible
 
             if (this.modeFonctionnement.estAutonome()) {
-                executerGamme(this.gammeDefaut.getId());
+                executeGamme(this.gammeDefaut.getId());
             }
         }
     }
 
     /**
      * Initialise la position des moteurs
-     *
-     * @throws Exception
      */
-    private void initRobot() throws Exception {
+    private void initRobot() {
         initPositionMoteurs();
     }
 
@@ -94,11 +87,9 @@ public class Controleur implements IExecuteur, IPilote {
 
 
     /**
-     * Récupére la liste des gammes et la gamme par défaut
-     *
-     * @throws Exception
+     * Récupère la liste des gammes et la gamme par défaut
      */
-    private void initGamme() throws Exception {
+    private void initGamme() {
         this.listeGammes = this.persistance.recupererGammes();
         this.gammeDefaut = this.persistance.recupererGammeDefaut();
     }
@@ -107,7 +98,7 @@ public class Controleur implements IExecuteur, IPilote {
     /**
      * Sauvegarde un log
      *
-     * @param r
+     * @param r le rapport à sauvegarder
      */
     public void sauverRapport(String r) {
         this.persistance.sauverLog(r);
@@ -118,7 +109,7 @@ public class Controleur implements IExecuteur, IPilote {
      *
      * @param id ID de la gamme à exécuter
      */
-    public void executerGamme(String id) {
+    public void executeGamme(String id) {
         if (this.modeFonctionnement.peutExecuter()) {
             if (!gammeEnCours()) {
                 Gamme gamme = this.listeGammes.get(id);
@@ -129,13 +120,12 @@ public class Controleur implements IExecuteur, IPilote {
                 }
             } else {
                 pilotage.envoyerMessage("Gamme deja en cours.");
-                return;
             }
         }
     }
 
     /**
-     * Implémentation de la classe IExecuteur, notifie le contréleur de la fin d'une gamme
+     * Implémentation de la classe IExecuteur, notifie le contrôleur de la fin d'une gamme
      */
     public void notifierFinGamme() {
         pilotage.envoyerMessage("Gamme terminee !");
@@ -150,15 +140,14 @@ public class Controleur implements IExecuteur, IPilote {
      * @return Liste des logs d'une date donnée
      */
     public ArrayList<String> filtrerLog(Date date) {
-        ArrayList<String> rapports = this.persistance.recupererLogs();
-        return rapports;
+        return this.persistance.recupererLogs();
     }
 
     /**
-     * Appelée lorsque le pilotage reéoit un message de l'opérateur. Détermine le type
+     * Appelée lorsque le pilotage reçoit un message de l'opérateur. Détermine le type
      * du message et l'action à mener en conséquence.
      *
-     * @param msg Message reéu
+     * @param msg Message reçu
      */
     public void notifierMessage(String msg) {
         JsonObject root = new JsonObject();
@@ -167,7 +156,7 @@ public class Controleur implements IExecuteur, IPilote {
             root = JsonParser.parseString(msg).getAsJsonObject();
             if (root == null)
                 return;
-        } catch (Exception e) {
+        } catch (JsonSyntaxException e) {
             System.out.println("Message recu invalide ! Le format JSON n'est pas respecte");
             e.printStackTrace();
             return;
@@ -190,15 +179,14 @@ public class Controleur implements IExecuteur, IPilote {
                     else
                         pilotage.envoyerMessage(String.format("Vous etes connecte sous %s.", utilisateurConnecte.getLogin()));
                 }
-                return;
             } else {
                 pilotage.envoyerMessage("Vous n'étes pas connecté !");
                 System.out.println("non connecté");
-                return;
             }
+            return;
         }
 
-        // On fait un Switch-Case sur la valeur du champ "Action" du message reéu.
+        // Switch-Case sur la valeur du champ "Action" du message reçu.
         // Les messages et leurs arguments sont décrits dans la documentation du logiciel.
         switch (action) {
             case "co":
@@ -212,7 +200,7 @@ public class Controleur implements IExecuteur, IPilote {
                 try {
                     Gamme g = interpreterGamme(root);
                     if (g != null) {
-                        System.out.println(String.format("Nouvelle gamme créée : %s", g.getId()));
+                        System.out.printf("Nouvelle gamme créée : %s%n", g.getId());
                         listeGammes.put(g.getId(), g);
                     } else throw new Exception();
                 } catch (Exception e) {
@@ -223,7 +211,7 @@ public class Controleur implements IExecuteur, IPilote {
                 break;
             case "modG":
                 try {
-                    Gamme g = (Gamme) gson.fromJson((JsonElement) root.get("gamme").getAsJsonObject(), Gamme.class);
+                    Gamme g = gson.fromJson(root.get("gamme").getAsJsonObject(), Gamme.class);
                     if (g != null) {
 
                         this.persistance.modifierGamme(g);
@@ -284,7 +272,7 @@ public class Controleur implements IExecuteur, IPilote {
                 JsonElement idGamme = root.get("idGamme");
                 if (idGamme == null)
                     throw new NullPointerException("L'id de la gamme à exécuter est nul");
-                executerGamme(idGamme.getAsString());
+                executeGamme(idGamme.getAsString());
                 break;
             case "logs":
                 if (root.get("date").getAsString() != null) {
@@ -302,7 +290,7 @@ public class Controleur implements IExecuteur, IPilote {
                 stopRobot();
                 break;
             default:
-                System.out.println(String.format("Commande inconnue : %s", action));
+                System.out.printf("Commande inconnue : %s%n", action);
                 break;
         }
         System.out.println("Message traite");
@@ -322,8 +310,7 @@ public class Controleur implements IExecuteur, IPilote {
 
     /**
      * Transforme un String JSON en objet Gamme
-     * La désérialisation en objet est un peu spéciale pour la classe Téche, et nécessite
-     * de le faire manuellement.
+     * La deserialization en objet est un peu spéciale pour la classe Tâche et nécessite de le faire manuellement.
      *
      * @param json Objet JSON à convertir
      * @return Gamme convertie
@@ -332,8 +319,7 @@ public class Controleur implements IExecuteur, IPilote {
         try {
             GsonBuilder builder = new GsonBuilder();
             Gson gson = builder.create();
-            Gamme g = gson.fromJson(json.get("gamme"), Gamme.class);
-            return g;
+            return gson.fromJson(json.get("gamme"), Gamme.class);
         } catch (JsonParseException e) {
             e.printStackTrace();
             return null;
@@ -341,8 +327,8 @@ public class Controleur implements IExecuteur, IPilote {
     }
 
     /**
-     * Stoppe les services d'exécution et de pilotage, puis le contréleur,
-     * en vue d'arréter le robot.
+     * Stoppe les services d'exécution et de pilotage, puis le contrôleur,
+     * en vue d'arrêter le robot.
      */
     private void stopRobot() {
         this.pilotage.stop();

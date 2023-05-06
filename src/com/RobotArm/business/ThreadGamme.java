@@ -48,7 +48,7 @@
 						for(Tache t:o.getListeTaches())
 						{
 							// La variable booléenne stopper permet d'interrompre le thread
-							// proprement et sans perte de mémoire ou de contréleur du thread
+							// proprement et sans perte de mémoire ou de contrôleur du thread
 							if(stopper == true)
 								throw new InterruptedException();
 							t.executer();							
