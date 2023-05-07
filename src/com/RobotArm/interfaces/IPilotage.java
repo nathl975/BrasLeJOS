@@ -9,12 +9,12 @@ import java.util.ArrayList;
  */
 public interface IPilotage {
 	/**
-	 * Transmet l'état du robot é l'opérateur
+	 * Transmet l'état du robot à l'opérateur
 	 */
 	void afficherEtatSysteme();
 	
 	/**
-	 * Transmet l'historique des logs é l'opérateur
+	 * Transmet l'historique des logs à l'opérateur
 	 */
 	void afficherHistorique(ArrayList<String> paramArrayList);
 	
@@ -24,12 +24,12 @@ public interface IPilotage {
 	void ecouter();
 	
 	/**
-	 * Définit le module pilote é notifier lors de la réception d'un message
+	 * Définit le module pilote à notifier lors de la réception d'un message
 	 */
 	void ajoutListener(IPilote paramIPilote);
 	
 	/**
-	 * Envoie un message é l'opérateur
+	 * Envoie un message à l'opérateur
 	 */
 	void envoyerMessage(String paramString);
 	

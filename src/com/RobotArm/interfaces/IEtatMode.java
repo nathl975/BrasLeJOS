@@ -12,7 +12,7 @@ public interface IEtatMode {
     boolean peutExecuter();
 
     /**
-     * @return True si l'état correspond é une exécution autonmatique, False sinon
+     * @return True si l'état correspond à une exécution autonmatique, False sinon
      */
     boolean estAutonome();
 }

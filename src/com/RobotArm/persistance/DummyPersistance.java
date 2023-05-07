@@ -26,13 +26,13 @@ public class DummyPersistance implements IPersistance
 	
 	public HashMap<String, Gamme> recupererGammes()
 	{
-		HashMap<String, Gamme> liste = new HashMap<String, Gamme>();
+		HashMap<String, Gamme> liste = new HashMap<>();
 		Gamme g;
 		try {
-			liste = new HashMap<String, Gamme>();
+			liste = new HashMap<>();
 			g = recupererGammeDefaut();
 			liste.put(g.getId(), g);
-		} catch (Exception e)
+		} catch (Exception ignored)
 		{
 			
 		}
@@ -45,12 +45,12 @@ public class DummyPersistance implements IPersistance
 		
 		Operation ope = new Operation("1", "Gamme défaut");		
 		
-		Tache t1 = new Tache("1", "Tourner é gauche", -135, 'C');
+		Tache t1 = new Tache("1", "Tourner à gauche", -135, 'C');
 		Tache t2 = new Tache("2", "Ouvre la pince", -45, 'D');
 		Tache t3 = new Tache("3", "Baisse le bras", -120, 'B');
 		Tache t4 = new Tache("4", "Ferme la pince", 45, 'D');		
 		Tache t5 = new Tache("5", "Monter le bras", 120, 'B');
-		Tache t6 = new Tache("6", "Tourner é droite", 135, 'C');
+		Tache t6 = new Tache("6", "Tourner à droite", 135, 'C');
 		Tache t7 = new Tache("7", "Attendre 2 secondes", 2000);
 		
 		// Saisir un objet

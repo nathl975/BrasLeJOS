@@ -10,9 +10,6 @@ import static org.junit.Assert.assertTrue;
 public class GammeTest {
 
 	@Test
-	/**
-	 * On vérifie que l'ajout d'une opération é une gamme s'effectue correctement
-	 */
 	public void isOperationAjoutee() {
 		Gamme g = new Gamme("1","Gamme test");
 		Operation o = new Operation("1","Operation test");
@@ -23,9 +20,6 @@ public class GammeTest {
 	}
 	
 	@Test
-	/**
-	 * On vérifie que la suppresion d'une opération dans une gamme s'effectue correctement
-	 */
 	public void isOperationSupprimee() throws Exception {
 		Gamme g = new Gamme("1","Gamme test");
 		Operation o1 = new Operation("1","Operation test 1");
