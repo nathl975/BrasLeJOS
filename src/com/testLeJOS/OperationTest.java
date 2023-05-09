@@ -10,9 +10,6 @@ import static org.junit.Assert.assertTrue;
 public class OperationTest {
 
 	@Test
-	/**
-	 * On vérifie que l'ajout d'une tache é une opération s'effectue correctement
-	 */
 	public void isTacheAjoutee() {
 		Operation o = new Operation("1","Operation test");
 		Tache t = new Tache("1","Tache test",0);
@@ -23,9 +20,6 @@ public class OperationTest {
 	}
 	
 	@Test
-	/**
-	 * On vérifie que la suppression d'une téche é une opération s'effectue correctement
-	 */
 	public void isTacheSupprimee() {
 		Operation o = new Operation("1","Operation test");
 		Tache t1 = new Tache("1","Tache test 1",0);

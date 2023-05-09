@@ -4,10 +4,11 @@
  import com.RobotArm.business.Operation;
  import com.RobotArm.business.Tache;
  import com.RobotArm.business.Utilisateur;
+ import com.RobotArm.exception.GammeNotFoundException;
+ import com.RobotArm.exception.UnableToReadUsersException;
  import com.RobotArm.interfaces.IPersistance;
 
  import java.util.ArrayList;
- import java.util.HashMap;
 
 
 /**
@@ -24,33 +25,35 @@ public class DummyPersistance implements IPersistance
 	
 	public void supprimerGamme(String id) {}
 	
-	public HashMap<String, Gamme> recupererGammes()
+	public ArrayList<Gamme> getGammes()
 	{
-		HashMap<String, Gamme> liste = new HashMap<String, Gamme>();
+		ArrayList<Gamme> liste = new ArrayList<>();
 		Gamme g;
 		try {
-			liste = new HashMap<String, Gamme>();
-			g = recupererGammeDefaut();
-			liste.put(g.getId(), g);
-		} catch (Exception e)
+			liste = getGammes();
+		} catch (Exception ignored)
 		{
 			
 		}
 		return liste;
 	}
 
-	
+	@Override
+	public Gamme findGamme(String id) throws GammeNotFoundException {
+		return null;
+	}
+
 	public Gamme recupererGammeDefaut() {
 		Gamme g = new Gamme("1", "Gamme defaut");
 		
 		Operation ope = new Operation("1", "Gamme défaut");		
 		
-		Tache t1 = new Tache("1", "Tourner é gauche", -135, 'C');
+		Tache t1 = new Tache("1", "Tourner à gauche", -135, 'C');
 		Tache t2 = new Tache("2", "Ouvre la pince", -45, 'D');
 		Tache t3 = new Tache("3", "Baisse le bras", -120, 'B');
 		Tache t4 = new Tache("4", "Ferme la pince", 45, 'D');		
 		Tache t5 = new Tache("5", "Monter le bras", 120, 'B');
-		Tache t6 = new Tache("6", "Tourner é droite", 135, 'C');
+		Tache t6 = new Tache("6", "Tourner à droite", 135, 'C');
 		Tache t7 = new Tache("7", "Attendre 2 secondes", 2000);
 		
 		// Saisir un objet
@@ -100,10 +103,10 @@ public class DummyPersistance implements IPersistance
 		return "";
 	}
 	
-	public void creerCompte(String login, String pwd) {}
+	public void createUser(String login, String pwd) {}
 	
 	
-	public Utilisateur trouverCompte(String l, String p)
+	public Utilisateur findUser(String l, String p)
 	{
 		Utilisateur[] users = new Utilisateur[]
 		{
@@ -121,4 +124,9 @@ public class DummyPersistance implements IPersistance
 	
 	
 	public void supprimerCompte(String login) {}
+
+	@Override
+	public ArrayList<Utilisateur> getUsers() throws UnableToReadUsersException {
+		return null;
+	}
 }

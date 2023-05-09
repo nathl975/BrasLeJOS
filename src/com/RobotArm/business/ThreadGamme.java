@@ -14,14 +14,14 @@
  public class ThreadGamme
  {
 	public IExecuteur executeur;
-	private ExecutorService execService;
+	private final ExecutorService execService;
 	private Future execThread;
 	private boolean stopper;
 	private Gamme gammeEnExec;
 	
 	/**
 	 * Constructeur de la classe
-	 * @param executeur
+	 * @param executeur exécuteur à utiliser pout lancer la game
 	 */
 	public ThreadGamme(IExecuteur executeur) {
 		this.executeur = executeur;
@@ -30,38 +30,34 @@
 	}
 
 	/**
-	 * Exécute une gamme en paralléle du reste du programme
-	 * @param g
+	 * Exécute une gamme en parallèle du reste du programme
+	 * @param g la gamme à exécuter
 	 */
-	public void executer(final Gamme g) {
+	public void executer(Gamme g) {
 		gammeEnExec = g;
-		System.out.println(String.format("Démarrage de la gamme %s", gammeEnExec.id));
+		System.out.printf("Démarrage de la gamme %s%n", gammeEnExec.id);
 		stopper = false;
-		this.execThread = this.execService.submit(new Runnable()
-		{
-			public void run()
-			{
-				// Pour chaque téche de la gamme, on lui demande d'exécuter son programme.
-				try {
-					for(Operation o:g.getListeOperations())
+		this.execThread = this.execService.submit(() -> {
+			// Pour chaque tâche de la gamme, on lui demande d'exécuter son programme.
+			try {
+				for(Operation o : g.getListeOperations())
+				{
+					for(Tache t:o.getListeTaches())
 					{
-						for(Tache t:o.getListeTaches())
-						{
-							// La variable booléenne stopper permet d'interrompre le thread
-							// proprement et sans perte de mémoire ou de contrôleur du thread
-							if(stopper == true)
-								throw new InterruptedException();
-							t.executer();							
-						}						
+						// La variable booléenne stopper permet d'interrompre le thread
+						// proprement et sans perte de mémoire ou de contrôleur du thread
+						if(stopper)
+							throw new InterruptedException();
+						t.executer();
 					}
 				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-				}
-				stopper = true;
-				ThreadGamme.this.notifierObservateur();				
 			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+			stopper = true;
+			ThreadGamme.this.notifierObservateur();
 		});
 	}
 	
@@ -74,16 +70,14 @@
 	}
 
 	/**
-	 * Retourne True si une gamme est en cours, False sinon
-	 * @return
+	 * @return True si une gamme est en cours, False sinon
 	 */
 	public Boolean gammeEnCours() {
-		return execThread == null ? false : ! this.execThread.isDone();
+		return execThread != null && !this.execThread.isDone();
 	}
 	
 	/**
-	 * Retourne la gamme actuellement exécutée
-	 * @return
+	 * @return la gamme actuellement exécutée
 	 */
 	public Gamme getGammeEnExecution()
 	{
@@ -91,7 +85,7 @@
 	}
 	
 	/**
-	 * Déclenche le mode panne, ce qui arréte le thread et l'exécution de la gamme
+	 * Déclenche le mode panne, ce qui arrête le thread et l'exécution de la gamme
 	 */
 	public void panne()
 	{
@@ -100,7 +94,7 @@
 	}
 	
 	/**
-	 * Arréte le thread complet en vue d'arréter le robot
+	 * Arrête le thread complet en vue d'arrêter le robot
 	 */
 	public void stop()
 	{

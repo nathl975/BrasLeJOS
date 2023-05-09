@@ -7,29 +7,33 @@ import com.RobotArm.business.Moteur;
 import com.RobotArm.controller.Controller;
 import com.RobotArm.interfaces.IPersistance;
 import com.RobotArm.interfaces.IPilotage;
-import com.RobotArm.persistance.DummyPersistance;
+import com.RobotArm.persistance.JsonPersistance;
 import com.RobotArm.pilotage.WifiListener;
+
+import java.io.IOException;
 
 
 public class RobotArm {
     private static IPilotage pilotage;
 
+    private static final String FICHIER_GAMMES = "gammes.json";
+    private static final String FICHIER_USERS = "users.json";
     public static void main(String[] args) {
         System.out.println("Debut du programme");
 
         Controller controller;
-        IPersistance persistance;
         try {
             // Création et instanciation du contrôleur et des différents modules
             InitHardware();
-            persistance = new DummyPersistance();
+            IPersistance persistance = new JsonPersistance(FICHIER_GAMMES, FICHIER_USERS);
+
             pilotage = new WifiListener();
             controller = new Controller(persistance, pilotage);
             pilotage.ajoutListener(controller);
 
             controller.start();
-        } catch (Exception e) {
-            System.out.println("Une erreur inconnue est survenue, impossible de demarrer !");
+        } catch (IOException e) {
+            System.out.println("Une erreur inconnue est survenue, impossible de démarrer !");
             e.printStackTrace();
         }
 
