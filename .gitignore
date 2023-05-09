@@ -3,6 +3,7 @@ target
 out
 bin
 RobotArm.jar
+classes
 
 # IntelliJ IDEA
 .idea

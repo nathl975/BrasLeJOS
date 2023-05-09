@@ -178,4 +178,7 @@ public class Moteur {
         this.sensRotation = sensRotation;
     }
 
+    public char getPort() {
+        return this.port;
+    }
 }

@@ -4,12 +4,16 @@ import com.RobotArm.business.Gamme;
 import com.RobotArm.business.Moteur;
 import com.RobotArm.business.ThreadGamme;
 import com.RobotArm.business.Utilisateur;
+import com.RobotArm.dto.GammeDTO;
+import com.RobotArm.exception.GammeNotFoundException;
+import com.RobotArm.exception.UnableToReadGammesException;
+import com.RobotArm.exception.UserNotFoundException;
 import com.RobotArm.interfaces.*;
+import com.RobotArm.jsonAdapters.JsonAdapter;
 import com.google.gson.*;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 
 /**
  * Classe pilote centrale de l'application. Tous les messages entre les classes
@@ -18,31 +22,30 @@ import java.util.HashMap;
  * @author Alvin
  */
 public class Controller implements IExecuteur, IPilote {
-    HashMap<String, Gamme> listeGammes;
-    Gamme gammeDefaut;
-    Utilisateur utilisateurConnecte;
-    IPersistance persistance;
-    IEtatMode modeFonctionnement;
-    IPilotage pilotage;
-    ThreadGamme execGammeService;
-    Gson gson;
+    private final Gamme gammeDefaut;
+    private Utilisateur utilisateurConnecte;
+    private final IPersistance persistance;
+    private IEtatMode modeFonctionnement;
+    private final IPilotage pilotage;
+    private ThreadGamme execGammeService;
+    private final Gson gson;
     boolean stop;
+    private final IAdapter<GammeDTO> adapter;
 
     /**
      * Constructeur de la classe
      */
-    public Controller(IPersistance pe, IPilotage pi) {
+    public Controller(IPersistance pe, IPilotage pi) throws UnableToReadGammesException {
         this.persistance = pe;
         this.pilotage = pi;
-        this.listeGammes = new HashMap<>();
-        this.gammeDefaut = new Gamme();
+        this.gammeDefaut = this.persistance.recupererGammeDefaut();
         this.modeFonctionnement = new ModeManuel();
         this.execGammeService = new ThreadGamme(this);
         this.gson = (new GsonBuilder()).create();
         this.stop = false;
+        this.adapter = new JsonAdapter<>();
 
         initRobot();
-        initGamme();
     }
 
     /**
@@ -85,16 +88,6 @@ public class Controller implements IExecuteur, IPilote {
         System.out.println("Moteur C fini");
     }
 
-
-    /**
-     * Récupère la liste des gammes et la gamme par défaut
-     */
-    private void initGamme() {
-        this.listeGammes = this.persistance.recupererGammes();
-        this.gammeDefaut = this.persistance.recupererGammeDefaut();
-    }
-
-
     /**
      * Sauvegarde un log
      *
@@ -105,19 +98,22 @@ public class Controller implements IExecuteur, IPilote {
     }
 
     /**
-     * Demadne l'exécution d'une gamme. S'il y a une gamme en cours, la gamme est refusée.
+     * Demande l'exécution d'une gamme. S'il y a une gamme en cours, la gamme est refusée.
      *
      * @param id ID de la gamme à exécuter
      */
     public void executeGamme(String id) {
         if (this.modeFonctionnement.peutExecuter()) {
             if (!gammeEnCours()) {
-                Gamme gamme = this.listeGammes.get(id);
-                if (gamme != null) {
-                    this.execGammeService.executer(gamme);
-                } else {
-                    pilotage.envoyerMessage("La gamme demandee n'existe pas.");
+                Gamme gamme = null;
+                try {
+                    gamme = this.persistance.findGamme(id);
+                    System.out.println(gamme.getId());
+                } catch (GammeNotFoundException e) {
+                    e.getMessage();
                 }
+
+                this.execGammeService.executer(gamme);
             } else {
                 pilotage.envoyerMessage("Gamme deja en cours.");
             }
@@ -128,7 +124,7 @@ public class Controller implements IExecuteur, IPilote {
      * Implémentation de la classe IExecuteur, notifie le contrôleur de la fin d'une gamme
      */
     public void notifierFinGamme() {
-        pilotage.envoyerMessage("Gamme terminee !");
+        pilotage.envoyerMessage("Gamme terminée !");
 
         this.initPositionMoteurs();
     }
@@ -150,62 +146,65 @@ public class Controller implements IExecuteur, IPilote {
      * @param msg Message reçu
      */
     public void notifierMessage(String msg) {
-        JsonObject root = new JsonObject();
-
+        JsonObject root;
         try {
             root = JsonParser.parseString(msg).getAsJsonObject();
             if (root == null)
                 return;
         } catch (JsonSyntaxException e) {
-            System.out.println("Message recu invalide ! Le format JSON n'est pas respecte");
+            System.out.println("Message reçu invalide ! Le format JSON n'est pas respecte");
             e.printStackTrace();
             return;
         }
 
         String action;
         JsonElement actionJson = root.get("action");
-        if (actionJson == null) return;
+        if (actionJson == null) {
+            System.out.println("Erreur action");
+        }
         action = actionJson.getAsString();
+        System.out.println(action);
 
         String login, pwd;
-        if (utilisateurConnecte == null) {
-            if (action.equals("co")) {
-                login = root.get("login").getAsString();
-                pwd = root.get("pwd").getAsString();
-                if (login != null && pwd != null) {
-                    utilisateurConnecte = persistance.trouverCompte(login, pwd);
-                    if (utilisateurConnecte == null)
-                        pilotage.envoyerMessage("Cet utilisateur n'existe pas !");
-                    else
-                        pilotage.envoyerMessage(String.format("Vous etes connecte sous %s.", utilisateurConnecte.getLogin()));
-                }
-            } else {
-                pilotage.envoyerMessage("Vous n'étes pas connecté !");
-                System.out.println("non connecté");
-            }
-            return;
-        }
-
         // Switch-Case sur la valeur du champ "Action" du message reçu.
         // Les messages et leurs arguments sont décrits dans la documentation du logiciel.
         switch (action) {
             case "co":
-                pilotage.envoyerMessage(String.format("Vous étes déjé connecté sous %s", utilisateurConnecte.getLogin()));
+                if (utilisateurConnecte == null) {
+                    login = root.get("login").getAsString();
+                    pwd = root.get("pwd").getAsString();
+                    System.out.println(login);
+                    System.out.println(pwd);
+                    if (login != null && pwd != null) {
+                        try {
+                            utilisateurConnecte = persistance.findUser(login, pwd);
+                        } catch (UserNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                        if (utilisateurConnecte == null)
+                            pilotage.envoyerMessage("Cet utilisateur n'existe pas !");
+                        else
+                            pilotage.envoyerMessage(String.format("Vous etes connecte sous %s.", utilisateurConnecte.getLogin()));
+                    }
+
+                } else {
+                    pilotage.envoyerMessage(String.format("Vous êtes déjà connecté sous %s", utilisateurConnecte.getLogin()));
+                }
                 break;
             case "deco":
                 utilisateurConnecte = null;
-                pilotage.envoyerMessage("Vous etes bien deconnecte.");
+                pilotage.envoyerMessage("Vous êtes bien déconnecté.");
                 break;
             case "newG":
                 try {
-                    Gamme g = interpreterGamme(root);
-                    if (g != null) {
-                        System.out.printf("Nouvelle gamme créée : %s%n", g.getId());
-                        listeGammes.put(g.getId(), g);
-                    } else throw new Exception();
-                } catch (Exception e) {
+                    Gamme g = this.adapter.deserialize(root.get("gamme").toString(), Gamme.class);
 
-                    this.pilotage.envoyerMessage("La gamme n'a pas pu etre creee.");
+                    this.persistance.creerGamme(g);
+                    System.out.println("Je passe");
+                    System.out.printf("Nouvelle gamme créée : %s%n", g.getId());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    this.pilotage.envoyerMessage("La gamme n'a pas pu être créée.");
                     sauverRapport(e.getMessage());
                 }
                 break;
@@ -226,9 +225,7 @@ public class Controller implements IExecuteur, IPilote {
                 try {
                     String g = root.get("idGamme").getAsString();
                     if (g != null) {
-
                         this.persistance.supprimerGamme(g);
-                        this.listeGammes.remove(g);
                     }
                     throw new Exception("Informations invalides");
                 } catch (Exception e) {
@@ -242,13 +239,11 @@ public class Controller implements IExecuteur, IPilote {
                     login = root.get("login").getAsString();
                     pwd = root.get("pwd").getAsString();
                     if (login != null && pwd != null) {
-
-                        this.persistance.creerCompte(login, pwd);
+                        this.persistance.createUser(login, pwd);
                     }
                     throw new Exception("Informations invalides");
                 } catch (Exception e) {
-
-                    this.pilotage.envoyerMessage("Le compte n'a pas pu etre cree.");
+                    this.pilotage.envoyerMessage("Le compte n'a pas pu être créé.");
                     sauverRapport(e.getMessage());
                 }
                 break;
@@ -259,6 +254,8 @@ public class Controller implements IExecuteur, IPilote {
                 if (this.modeFonctionnement.getClass().equals(ModePanne.class))
                     this.execGammeService = new ThreadGamme(this);
                 this.modeFonctionnement = new ModeAutonome();
+                // this.executeGamme(this.gammeDefaut.getId());
+                this.execGammeService.executer(gammeDefaut);
                 break;
             case "manu":
                 if (this.modeFonctionnement.getClass().equals(ModePanne.class))
@@ -270,8 +267,6 @@ public class Controller implements IExecuteur, IPilote {
                 break;
             case "execG":
                 JsonElement idGamme = root.get("idGamme");
-                if (idGamme == null)
-                    throw new NullPointerException("L'id de la gamme à exécuter est nul");
                 executeGamme(idGamme.getAsString());
                 break;
             case "logs":
@@ -306,24 +301,6 @@ public class Controller implements IExecuteur, IPilote {
 
     public boolean gammeEnCours() {
         return this.execGammeService.gammeEnCours();
-    }
-
-    /**
-     * Transforme un String JSON en objet Gamme
-     * La deserialization en objet est un peu spéciale pour la classe Tâche et nécessite de le faire manuellement.
-     *
-     * @param json Objet JSON à convertir
-     * @return Gamme convertie
-     */
-    private Gamme interpreterGamme(JsonObject json) {
-        try {
-            GsonBuilder builder = new GsonBuilder();
-            Gson gson = builder.create();
-            return gson.fromJson(json.get("gamme"), Gamme.class);
-        } catch (JsonParseException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     /**

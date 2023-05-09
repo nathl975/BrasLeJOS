@@ -4,10 +4,11 @@
  import com.RobotArm.business.Operation;
  import com.RobotArm.business.Tache;
  import com.RobotArm.business.Utilisateur;
+ import com.RobotArm.exception.GammeNotFoundException;
+ import com.RobotArm.exception.UnableToReadUsersException;
  import com.RobotArm.interfaces.IPersistance;
 
  import java.util.ArrayList;
- import java.util.HashMap;
 
 
 /**
@@ -24,14 +25,12 @@ public class DummyPersistance implements IPersistance
 	
 	public void supprimerGamme(String id) {}
 	
-	public HashMap<String, Gamme> recupererGammes()
+	public ArrayList<Gamme> getGammes()
 	{
-		HashMap<String, Gamme> liste = new HashMap<>();
+		ArrayList<Gamme> liste = new ArrayList<>();
 		Gamme g;
 		try {
-			liste = new HashMap<>();
-			g = recupererGammeDefaut();
-			liste.put(g.getId(), g);
+			liste = getGammes();
 		} catch (Exception ignored)
 		{
 			
@@ -39,7 +38,11 @@ public class DummyPersistance implements IPersistance
 		return liste;
 	}
 
-	
+	@Override
+	public Gamme findGamme(String id) throws GammeNotFoundException {
+		return null;
+	}
+
 	public Gamme recupererGammeDefaut() {
 		Gamme g = new Gamme("1", "Gamme defaut");
 		
@@ -100,10 +103,10 @@ public class DummyPersistance implements IPersistance
 		return "";
 	}
 	
-	public void creerCompte(String login, String pwd) {}
+	public void createUser(String login, String pwd) {}
 	
 	
-	public Utilisateur trouverCompte(String l, String p)
+	public Utilisateur findUser(String l, String p)
 	{
 		Utilisateur[] users = new Utilisateur[]
 		{
@@ -121,4 +124,9 @@ public class DummyPersistance implements IPersistance
 	
 	
 	public void supprimerCompte(String login) {}
+
+	@Override
+	public ArrayList<Utilisateur> getUsers() throws UnableToReadUsersException {
+		return null;
+	}
 }

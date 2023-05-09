@@ -1,9 +1,11 @@
 package com.RobotArm.interfaces;
 
 import com.RobotArm.business.Gamme;
+import com.RobotArm.exception.GammeNotFoundException;
+import com.RobotArm.exception.UnableToReadGammesException;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public interface IGestionGammes {
     /**
@@ -29,7 +31,12 @@ public interface IGestionGammes {
     /**
      * @return Liste des gammes sauvegardées
      */
-    HashMap<String, Gamme> recupererGammes();
+    ArrayList<Gamme> getGammes() throws UnableToReadGammesException;
+
+    /**
+     * @return la gamme possédant l'id recherché
+     */
+    Gamme findGamme(String id) throws GammeNotFoundException;
 
     /**
      *

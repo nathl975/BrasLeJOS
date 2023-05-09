@@ -1,6 +1,10 @@
 package com.RobotArm.interfaces;
 
 import com.RobotArm.business.Utilisateur;
+import com.RobotArm.exception.UnableToReadUsersException;
+import com.RobotArm.exception.UserNotFoundException;
+
+import java.util.ArrayList;
 
 public interface IGestionUtilisateurs {
     /**
@@ -9,14 +13,14 @@ public interface IGestionUtilisateurs {
      * @param pwd Mot de passe chiffré de l'utilisateur
      *
      */
-    void creerCompte(String login, String pwd);
+    void createUser(String login, String pwd);
 
     /**
      * @param l Identifiant de l'utilisateur
      * @param p Mot de passe
      * @return Utilisateur trouvé ou null
      */
-    Utilisateur trouverCompte(String l, String p);
+    Utilisateur findUser(String l, String p) throws UserNotFoundException;
 
     /**
      * Supprime un compte utilisateur
@@ -24,4 +28,6 @@ public interface IGestionUtilisateurs {
      *
      */
     void supprimerCompte(String login);
+
+    ArrayList<Utilisateur> getUsers() throws UnableToReadUsersException;
 }

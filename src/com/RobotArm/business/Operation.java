@@ -69,4 +69,7 @@
    public ArrayList<Tache> getListeTaches() {
      return this.listeTaches;
    }
+   public void setListeTaches(ArrayList<Tache> listeTaches) {
+     this.listeTaches = listeTaches;
+   }
  }

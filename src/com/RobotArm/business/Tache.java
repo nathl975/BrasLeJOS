@@ -5,6 +5,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import lejos.utility.Delay;
 
+
 @JsonAdapter(TacheAdapter.class)
 
 /*
@@ -16,7 +17,7 @@ public class Tache {
     private String id;
     private String description;
     private TypeAction typeAction;
-    private int valeur;
+    private final int valeur;
     private Moteur moteur;
 
     public enum TypeAction {@SerializedName("Attendre") Attendre, @SerializedName("Tourner") Tourner;}
@@ -27,7 +28,7 @@ public class Tache {
     }
 
     /**
-     * Crée une téche d'attente
+     * Crée une tâche d'attente
      *
      * @param id
      * @param description
@@ -43,7 +44,7 @@ public class Tache {
     }
 
     /**
-     * Crée une téche de rotation
+     * Crée une tâche de rotation
      *
      * @param id
      * @param description
@@ -94,6 +95,14 @@ public class Tache {
 
     public void setTypeAction(TypeAction typeAction) {
         this.typeAction = typeAction;
+    }
+
+    public Moteur getMoteur() {
+        return this.moteur;
+    }
+
+    public int getValeur() {
+        return valeur;
     }
 }
 
