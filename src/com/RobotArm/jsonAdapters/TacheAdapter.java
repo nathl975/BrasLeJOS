@@ -37,12 +37,11 @@ public class TacheAdapter implements JsonDeserializer<Tache>, JsonSerializer<Tac
 		jsonObject.addProperty("description", tache.getDescription());
 		jsonObject.addProperty("typeAction", tache.getTypeAction().toString());
 		jsonObject.addProperty("valeur", tache.getValeur());
-		System.out.println(tache.toString());
 		if (tache.getTypeAction() == Tache.TypeAction.Tourner) {
 			System.out.println(tache.getId());
 			jsonObject.addProperty("moteur", tache.getMoteur().getPort());
 		}
 
-		return null;
+		return jsonObject;
 	}
 }

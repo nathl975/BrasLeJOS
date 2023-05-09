@@ -7,13 +7,13 @@ import com.RobotArm.business.Utilisateur;
 import com.RobotArm.dto.GammeDTO;
 import com.RobotArm.exception.GammeNotFoundException;
 import com.RobotArm.exception.UnableToReadGammesException;
-import com.RobotArm.exception.UserNotFoundException;
 import com.RobotArm.interfaces.*;
 import com.RobotArm.jsonAdapters.JsonAdapter;
 import com.google.gson.*;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Classe pilote centrale de l'application. Tous les messages entre les classes
@@ -75,17 +75,21 @@ public class Controller implements IExecuteur, IPilote {
      * Positionne tous les moteurs en butée.
      */
     private void initPositionMoteurs() {
-        Moteur.getInstance('A').tourner(360);
-        Moteur.getInstance('A').stop();
-        System.out.println("Moteur A fini");
+        try {
+            Objects.requireNonNull(Moteur.getInstance('A')).tourner(360);
+            Objects.requireNonNull(Moteur.getInstance('A')).stop();
+            System.out.println("Moteur A fini");
 
-        Moteur.getInstance('B').tourner(360);
-        Moteur.getInstance('B').stop();
-        System.out.println("Moteur B fini");
+            Objects.requireNonNull(Moteur.getInstance('B')).tourner(360);
+            Objects.requireNonNull(Moteur.getInstance('B')).stop();
+            System.out.println("Moteur B fini");
 
-        Moteur.getInstance('C').tourner(360);
-        Moteur.getInstance('C').stop();
-        System.out.println("Moteur C fini");
+            Objects.requireNonNull(Moteur.getInstance('C')).tourner(360);
+            Objects.requireNonNull(Moteur.getInstance('C')).stop();
+            System.out.println("Moteur C fini");
+        } catch (NullPointerException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     /**
@@ -162,7 +166,7 @@ public class Controller implements IExecuteur, IPilote {
         if (actionJson == null) {
             System.out.println("Erreur action");
         }
-        action = actionJson.getAsString();
+        action = Objects.requireNonNull(actionJson).getAsString();
         System.out.println(action);
 
         String login, pwd;
@@ -176,15 +180,17 @@ public class Controller implements IExecuteur, IPilote {
                     System.out.println(login);
                     System.out.println(pwd);
                     if (login != null && pwd != null) {
-                        try {
-                            utilisateurConnecte = persistance.findUser(login, pwd);
-                        } catch (UserNotFoundException e) {
-                            throw new RuntimeException(e);
-                        }
-                        if (utilisateurConnecte == null)
-                            pilotage.envoyerMessage("Cet utilisateur n'existe pas !");
-                        else
-                            pilotage.envoyerMessage(String.format("Vous etes connecte sous %s.", utilisateurConnecte.getLogin()));
+                        // TODO: implémenter le stockage d'utilisateurs
+//                        try {
+//                            utilisateurConnecte = persistance.findUser(login, pwd);
+//                        } catch (UserNotFoundException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                        if (utilisateurConnecte == null)
+//                            pilotage.envoyerMessage("Cet utilisateur n'existe pas !");
+//                        else
+//                            pilotage.envoyerMessage(String.format("Vous êtes connecte sous %s.", utilisateurConnecte.getLogin()));
+                        this.utilisateurConnecte = new Utilisateur(login, pwd, true);
                     }
 
                 } else {
@@ -197,6 +203,11 @@ public class Controller implements IExecuteur, IPilote {
                 break;
             case "newG":
                 try {
+                    if (utilisateurConnecte == null) {
+                        System.out.println("Non connecté");
+                        break;
+                    }
+
                     Gamme g = this.adapter.deserialize(root.get("gamme").toString(), Gamme.class);
 
                     this.persistance.creerGamme(g);
@@ -210,6 +221,11 @@ public class Controller implements IExecuteur, IPilote {
                 break;
             case "modG":
                 try {
+                    if (utilisateurConnecte == null) {
+                        System.out.println("Non connecté");
+                        break;
+                    }
+
                     Gamme g = gson.fromJson(root.get("gamme").getAsJsonObject(), Gamme.class);
                     if (g != null) {
 
@@ -223,6 +239,11 @@ public class Controller implements IExecuteur, IPilote {
                 break;
             case "delG":
                 try {
+                    if (utilisateurConnecte == null) {
+                        System.out.println("Non connecté");
+                        break;
+                    }
+
                     String g = root.get("idGamme").getAsString();
                     if (g != null) {
                         this.persistance.supprimerGamme(g);
@@ -236,6 +257,10 @@ public class Controller implements IExecuteur, IPilote {
                 break;
             case "newU":
                 try {
+                    if (utilisateurConnecte == null) {
+                        System.out.println("Non connecté");
+                        break;
+                    }
                     login = root.get("login").getAsString();
                     pwd = root.get("pwd").getAsString();
                     if (login != null && pwd != null) {
@@ -248,9 +273,17 @@ public class Controller implements IExecuteur, IPilote {
                 }
                 break;
             case "delU":
+                if (utilisateurConnecte == null) {
+                    System.out.println("Non connecté");
+                    break;
+                }
                 this.persistance.supprimerCompte(root.get("login").getAsString());
                 break;
             case "auto":
+                if (utilisateurConnecte == null) {
+                    System.out.println("Non connecté");
+                    break;
+                }
                 if (this.modeFonctionnement.getClass().equals(ModePanne.class))
                     this.execGammeService = new ThreadGamme(this);
                 this.modeFonctionnement = new ModeAutonome();
@@ -258,14 +291,26 @@ public class Controller implements IExecuteur, IPilote {
                 this.execGammeService.executer(gammeDefaut);
                 break;
             case "manu":
+                if (utilisateurConnecte == null) {
+                    System.out.println("Non connecté");
+                    break;
+                }
                 if (this.modeFonctionnement.getClass().equals(ModePanne.class))
                     this.execGammeService = new ThreadGamme(this);
                 this.modeFonctionnement = new ModeManuel();
                 break;
             case "panne":
+                if (utilisateurConnecte == null) {
+                    System.out.println("Non connecté");
+                    break;
+                }
                 declencherPanne();
                 break;
             case "execG":
+                if (utilisateurConnecte == null) {
+                    System.out.println("Non connecté");
+                    break;
+                }
                 JsonElement idGamme = root.get("idGamme");
                 executeGamme(idGamme.getAsString());
                 break;
@@ -278,7 +323,7 @@ public class Controller implements IExecuteur, IPilote {
                 this.pilotage.afficherHistorique(rapports);
                 break;
             case "ping":
-                System.out.println("Ping reéu");
+                System.out.println("Ping reçu");
                 this.pilotage.envoyerMessage("Pong !");
                 break;
             case "stop":

@@ -15,6 +15,7 @@ import com.google.gson.reflect.TypeToken;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class JsonPersistance implements IPersistance {
     private final JsonAdapter<Gamme> gammeAdapter;
     private final FileReader gammeReader;
     private final FileWriter gammeWriter;
-
+    private final String fichierGammes;
     private final JsonAdapter<Utilisateur> userAdapter;
     private final FileReader userReader;
     private final FileWriter userWriter;
@@ -30,6 +31,7 @@ public class JsonPersistance implements IPersistance {
     private ArrayList<Gamme> gammes;
 
     public JsonPersistance(String fichierGammes, String fichierUsers) throws IOException {
+        this.fichierGammes = fichierGammes;
         this.gammeAdapter = new JsonAdapter<>();
         this.gammeWriter = new FileWriter(fichierGammes);
         this.gammeReader = new FileReader(fichierGammes);
@@ -46,7 +48,6 @@ public class JsonPersistance implements IPersistance {
         	if (gammes == null) {
                 gammes = new ArrayList<>();
             } else {
-                gammes = getGammes();
                 for (Gamme g:gammes) {
                     System.out.println(g.getId());
                 }
@@ -67,7 +68,28 @@ public class JsonPersistance implements IPersistance {
 
     @Override
     public void supprimerGamme(String paramString) {
+        Gamme gamme;
+        try {
+            gamme = this.findGamme(paramString);
+            System.out.println(gamme.getId());
 
+            this.gammes = getGammes();
+            if (gammes == null) {
+                gammes = new ArrayList<>();
+            }
+            gammes.remove(gamme);
+            System.out.println(gammes);
+
+            PrintWriter writer = new PrintWriter(fichierGammes);
+            writer.print("");
+            writer.close();
+            this.gammeAdapter.serializeAll(gammes, this.gammeWriter);
+            this.gammeWriter.flush();
+        } catch (IOException e) {
+            System.out.println("Impossible de stocker la gamme");
+        } catch (GammeNotFoundException e) {
+            e.getMessage();
+        }
     }
 
     @Override
@@ -168,8 +190,7 @@ public class JsonPersistance implements IPersistance {
 
     @Override
     public ArrayList<Utilisateur> getUsers() throws UnableToReadUsersException {
-        ArrayList<Utilisateur> users = new ArrayList<>();
-        return users;
+        return new ArrayList<>();
     }
 
     @Override
