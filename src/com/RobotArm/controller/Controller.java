@@ -4,7 +4,6 @@ import com.RobotArm.business.Gamme;
 import com.RobotArm.business.Moteur;
 import com.RobotArm.business.ThreadGamme;
 import com.RobotArm.business.Utilisateur;
-import com.RobotArm.dto.GammeDTO;
 import com.RobotArm.exception.GammeNotFoundException;
 import com.RobotArm.exception.UnableToReadGammesException;
 import com.RobotArm.interfaces.*;
@@ -30,7 +29,7 @@ public class Controller implements IExecuteur, IPilote {
     private ThreadGamme execGammeService;
     private final Gson gson;
     boolean stop;
-    private final IAdapter<GammeDTO> adapter;
+    private final IAdapter<Gamme> adapter;
 
     /**
      * Constructeur de la classe
