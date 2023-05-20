@@ -12,50 +12,38 @@ import com.RobotArm.interfaces.IPersistance;
 import com.RobotArm.jsonAdapters.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class JsonPersistance implements IPersistance {
     private final JsonAdapter<Gamme> gammeAdapter;
-    private final FileReader gammeReader;
-    private final FileWriter gammeWriter;
     private final String fichierGammes;
     private final JsonAdapter<Utilisateur> userAdapter;
-    private final FileReader userReader;
-    private final FileWriter userWriter;
-
     private ArrayList<Gamme> gammes;
+    private static final Logger LOGGER = Logger.getLogger(JsonPersistance.class.getName());
+
 
     public JsonPersistance(String fichierGammes, String fichierUsers) throws IOException {
         this.fichierGammes = fichierGammes;
         this.gammeAdapter = new JsonAdapter<>();
-        this.gammeWriter = new FileWriter(fichierGammes);
-        this.gammeReader = new FileReader(fichierGammes);
 
         this.userAdapter = new JsonAdapter<>();
-        this.userWriter = new FileWriter(fichierUsers);
-        this.userReader = new FileReader(fichierUsers);
     }
 
     @Override
     public void creerGamme(Gamme gamme) {
         try {
             this.gammes = getGammes();
-        	if (gammes == null) {
+            if (gammes == null) {
                 gammes = new ArrayList<>();
-            } else {
-                for (Gamme g:gammes) {
-                    System.out.println(g.getId());
-                }
             }
             gammes.add(gamme);
-
-            this.gammeAdapter.serializeAll(gammes, this.gammeWriter);
-            this.gammeWriter.flush();
+            try (FileWriter gammeWriter = new FileWriter(this.fichierGammes)) {
+                this.gammeAdapter.serializeAll(gammes, gammeWriter);
+            }
+            //LOGGER.info("Gamme créée avec succès : " + gamme.getId());
         } catch (IOException e) {
             System.out.println("Impossible de stocker la gamme");
         }
@@ -71,32 +59,29 @@ public class JsonPersistance implements IPersistance {
         Gamme gamme;
         try {
             gamme = this.findGamme(paramString);
-            System.out.println(gamme.getId());
 
             this.gammes = getGammes();
             if (gammes == null) {
                 gammes = new ArrayList<>();
             }
             gammes.remove(gamme);
-            System.out.println(gammes);
 
-            PrintWriter writer = new PrintWriter(fichierGammes);
-            writer.print("");
-            writer.close();
-            this.gammeAdapter.serializeAll(gammes, this.gammeWriter);
-            this.gammeWriter.flush();
+            try (FileWriter gammeWriter = new FileWriter(this.fichierGammes)) {
+                this.gammeAdapter.serializeAll(gammes, gammeWriter);
+            }
         } catch (IOException e) {
-            System.out.println("Impossible de stocker la gamme");
+            LOGGER.severe("Impossible de stocker la gamme : " + e.getMessage());
         } catch (GammeNotFoundException e) {
             e.getMessage();
         }
     }
 
+
     @Override
     public ArrayList<Gamme> getGammes() throws UnableToReadGammesException {
         ArrayList<Gamme> gammes = null;
-        try {
-            gammes = this.gammeAdapter.deserialize(this.gammeReader, new TypeToken<List<Gamme>>() {}.getType());
+        try (FileReader gammeReader = new FileReader(this.fichierGammes)) {
+            gammes = this.gammeAdapter.deserialize(gammeReader, new TypeToken<List<Gamme>>() {}.getType());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -104,6 +89,7 @@ public class JsonPersistance implements IPersistance {
             gammes = new ArrayList<>();
         }
         return gammes;
+
     }
 
     @Override
@@ -112,10 +98,12 @@ public class JsonPersistance implements IPersistance {
             ArrayList<Gamme> gammes = getGammes();
 
             for (Gamme gamme : gammes) {
-                if (gamme.getId().equals(id))
+                if (gamme.getId().equals(id)) {
                     return gamme;
+                }
             }
         } catch (UnableToReadGammesException e) {
+            LOGGER.severe("Impossible de lire les gammes: " + e.getMessage());
             e.printStackTrace();
         }
         throw new GammeNotFoundException();
