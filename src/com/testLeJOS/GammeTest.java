@@ -93,7 +93,6 @@ public class GammeTest {
 		}
 	}
 
-
 	@Test
 	public void testFindGamme() {
 		try {
@@ -113,6 +112,34 @@ public class GammeTest {
 			assertEquals("Expected ID of " + i + ", but got " + result.get(i).getId(), Integer.toString(i), result.get(i).getId());
 		}
 	}
+
+	@Test
+	public void testModifierGamme() throws UnableToReadGammesException {
+		Gamme gamme = persistance.getGammes().get(0);
+
+		Tache nouvelleTache = new Tache("6", "Nouvelle Tâche", 500);
+
+		Operation operation = gamme.getListeOperations().get(0);
+		operation.AjouterTache(nouvelleTache);
+
+		Operation nouvelleOperation = new Operation("6", "Nouvelle Opération");
+		nouvelleOperation.AjouterTache(new Tache("1", "Tâche 1 de la nouvelle opération", 200));
+
+		gamme.AjouterOperation(nouvelleOperation);
+
+		persistance.modifierGamme(gamme);
+
+		try {
+			Gamme gammeModifiee = persistance.findGamme(gamme.getId());
+
+			assertTrue(gammeModifiee.getListeOperations().get(0).getListeTaches().contains(nouvelleTache));
+			assertTrue(gammeModifiee.getListeOperations().contains(nouvelleOperation));
+
+		} catch (GammeNotFoundException e) {
+			fail(e.getMessage());
+		}
+	}
+
 
 
 }

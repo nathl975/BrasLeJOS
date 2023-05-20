@@ -50,8 +50,25 @@ public class JsonPersistance implements IPersistance {
     }
 
     @Override
-    public void modifierGamme(Gamme paramGamme) {
-
+    public void modifierGamme(Gamme gammeAModifier)  {
+        try {
+            // Récupérer toutes les gammes
+            ArrayList<Gamme> gammes = getGammes();
+            // Parcourir la liste des gammes
+            for (int i = 0; i < gammes.size(); i++) {
+                Gamme gamme = gammes.get(i);
+                if (gamme.getId().equals(gammeAModifier.getId())) {
+                    gammes.set(i, gammeAModifier);
+                    break;
+                }
+            }
+            // Écrire les modifications dans le fichier
+            try (FileWriter gammeWriter = new FileWriter(this.fichierGammes)) {
+                this.gammeAdapter.serializeAll(gammes, gammeWriter);
+            }
+        } catch (IOException e) {
+            LOGGER.severe("Impossible de modifier la gamme : " + e.getMessage());
+        }
     }
 
     @Override

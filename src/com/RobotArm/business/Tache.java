@@ -104,5 +104,14 @@ public class Tache {
     public int getValeur() {
         return valeur;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Tache tache = (Tache) o;
+        return id.equals(tache.id);
+    }
+
 }
 
