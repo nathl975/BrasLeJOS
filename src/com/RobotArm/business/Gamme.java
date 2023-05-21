@@ -69,4 +69,14 @@ public class Gamme {
     }
 
     public void setListeOperations(ArrayList<Operation> listeOperations) { this.listeOperations = listeOperations; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Gamme gamme = (Gamme) o;
+        return id.equals(gamme.id);
+    }
+
 }
+
