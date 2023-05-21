@@ -29,7 +29,6 @@ public class GammeTest {
 
 	private static final Logger LOGGER = Logger.getLogger(JsonPersistance.class.getName());
 
-	@Before
 	public void setUp() throws IOException {
 		resetTestGammesFile(fichierGammesTest);
 		persistance = null;
@@ -82,9 +81,27 @@ public class GammeTest {
 		return g;
 	}
 
+	@Test
+	public void testCreerGamme() throws IOException {
+		resetTestGammesFile(fichierGammesTest);
+		persistance = new JsonPersistance(fichierGammesTest, fichierUsersTest);
+
+		Gamme nouvelleGamme = creerGammeDefaut(0); // ou utilisez 1 si vous préférez commencer à partir de 1
+		persistance.creerGamme(nouvelleGamme);
+
+		try {
+			Gamme gamme = persistance.findGamme(nouvelleGamme.getId());
+			assertNotNull(gamme);
+			assertEquals(nouvelleGamme.getId(), gamme.getId());
+		} catch (GammeNotFoundException e) {
+			fail(e.getMessage());
+		}
+	}
+
 
 	@Test
-	public void testSupprimerGamme() {
+	public void testSupprimerGamme() throws IOException {
+		setUp();
 		persistance.supprimerGamme(defaultGamme.getId());
 		try {
 			persistance.findGamme(defaultGamme.getId());
@@ -94,7 +111,8 @@ public class GammeTest {
 	}
 
 	@Test
-	public void testFindGamme() {
+	public void testFindGamme() throws IOException {
+		setUp();
 		try {
 			Gamme gamme = persistance.findGamme(defaultGamme.getId());
 			assertNotNull(gamme);
@@ -105,7 +123,8 @@ public class GammeTest {
 	}
 
 	@Test
-	public void testGetGammes() throws UnableToReadGammesException {
+	public void testGetGammes() throws IOException {
+		setUp();
 		ArrayList<Gamme> result = persistance.getGammes();
 		assertEquals(5, result.size());
 		for(int i = 0; i < 5; i++) {
@@ -114,7 +133,8 @@ public class GammeTest {
 	}
 
 	@Test
-	public void testModifierGamme() throws UnableToReadGammesException {
+	public void testModifierGamme() throws IOException {
+		setUp();
 		Gamme gamme = persistance.getGammes().get(0);
 
 		Tache nouvelleTache = new Tache("6", "Nouvelle Tâche", 500);
