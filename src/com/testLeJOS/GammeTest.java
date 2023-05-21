@@ -4,18 +4,13 @@ import com.RobotArm.business.Tache;
 import com.RobotArm.business.Gamme;
 import com.RobotArm.business.Operation;
 import com.RobotArm.exception.GammeNotFoundException;
-import com.RobotArm.exception.UnableToReadGammesException;
 import com.RobotArm.interfaces.IPersistance;
 import com.RobotArm.persistance.JsonPersistance;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.*;

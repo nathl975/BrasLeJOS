@@ -1,7 +1,6 @@
 package com.RobotArm.business;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * Classe représentant une gamme
