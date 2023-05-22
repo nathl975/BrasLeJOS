@@ -1,4 +1,4 @@
-package com.RobotArm.jsonAdapters;
+package com.RobotArm.adapter;
 
 import com.RobotArm.business.Gamme;
 import com.RobotArm.interfaces.IAdapter;

@@ -1,8 +1,6 @@
  package com.RobotArm.persistance;
 
  import com.RobotArm.business.Gamme;
- import com.RobotArm.business.Operation;
- import com.RobotArm.business.Tache;
  import com.RobotArm.business.Utilisateur;
  import com.RobotArm.exception.GammeNotFoundException;
  import com.RobotArm.exception.UnableToReadUsersException;
@@ -44,37 +42,7 @@ public class DummyPersistance implements IPersistance
 	}
 
 	public Gamme recupererGammeDefaut() {
-		Gamme g = new Gamme("1", "Gamme defaut");
-		
-		Operation ope = new Operation("1", "Gamme défaut");		
-		
-		Tache t1 = new Tache("1", "Tourner à gauche", -135, 'C');
-		Tache t2 = new Tache("2", "Ouvre la pince", -45, 'D');
-		Tache t3 = new Tache("3", "Baisse le bras", -120, 'B');
-		Tache t4 = new Tache("4", "Ferme la pince", 45, 'D');		
-		Tache t5 = new Tache("5", "Monter le bras", 120, 'B');
-		Tache t6 = new Tache("6", "Tourner à droite", 135, 'C');
-		Tache t7 = new Tache("7", "Attendre 2 secondes", 2000);
-		
-		// Saisir un objet
-		ope.AjouterTache(t1);
-		ope.AjouterTache(t2);
-		ope.AjouterTache(t3);
-		ope.AjouterTache(t4);
-		ope.AjouterTache(t5);
-		ope.AjouterTache(t6);
-		
-		// Déposer un objet
-		ope.AjouterTache(t3);
-		ope.AjouterTache(t2);
-		ope.AjouterTache(t5);
-		ope.AjouterTache(t4);		
-		
-		// Attendre
-		ope.AjouterTache(t7);
-		
-		g.AjouterOperation(ope);		
-		return g;
+		return new Gamme();
 	}
 
 	

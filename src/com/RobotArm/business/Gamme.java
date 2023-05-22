@@ -36,14 +36,6 @@ public class Gamme {
         }
     }
 
-
-    public void executer() {
-        for (Operation o : this.listeOperations) {
-            o.executer();
-        }
-    }
-
-
     public String getId() {
         return this.id;
     }

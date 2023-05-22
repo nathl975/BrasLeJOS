@@ -1,18 +1,21 @@
 package com.RobotArm.persistance;
 
+import com.RobotArm.adapter.JsonAdapter;
 import com.RobotArm.business.Gamme;
 import com.RobotArm.business.Operation;
 import com.RobotArm.business.Tache;
 import com.RobotArm.business.Utilisateur;
+import com.RobotArm.enumeration.TypeAction;
 import com.RobotArm.exception.GammeNotFoundException;
 import com.RobotArm.exception.UnableToReadGammesException;
 import com.RobotArm.exception.UnableToReadUsersException;
 import com.RobotArm.exception.UserNotFoundException;
 import com.RobotArm.interfaces.IPersistance;
-import com.RobotArm.jsonAdapters.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.*;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -132,25 +135,18 @@ public class JsonPersistance implements IPersistance {
 
         Operation ope = new Operation("1", "Gamme défaut");
 
-        Tache t1 = new Tache("1", "Tourner à gauche", -90, 'B');
-        Tache t2 = new Tache("2", "Tourner à droite", 90, 'B');
-        Tache t3 = new Tache("3", "Ouvre la pince", -180, 'A');
-        Tache t4 = new Tache("4", "Ferme la pince", 180, 'A');
-        Tache t5 = new Tache("5", "Baisse le bras", -120, 'C');
-        Tache t6 = new Tache("6", "Monter le bras", 120, 'C');
-        Tache t7 = new Tache("7", "Attendre 2 secondes", 2000);
+        Tache t1 = new Tache("1", "Tourner à gauche", TypeAction.TournerGauche);
+        Tache t2 = new Tache("2", "Tourner à droite", TypeAction.TournerDroite);
+        Tache t3 = new Tache("3", "Ouvre la pince", TypeAction.Attraper);
+        Tache t4 = new Tache("4", "Ferme la pince", TypeAction.Poser);
+        Tache t5 = new Tache("7", "Attendre 2 secondes", TypeAction.Attendre);
+
 
         // Saisir un objet
         ope.AjouterTache(t3);
-        ope.AjouterTache(t5);
-        ope.AjouterTache(t4);
-        ope.AjouterTache(t6);
         ope.AjouterTache(t1);
         ope.AjouterTache(t5);
-        ope.AjouterTache(t3);
-        ope.AjouterTache(t6);
         ope.AjouterTache(t4);
-        ope.AjouterTache(t7);
         ope.AjouterTache(t2);
 
         g.AjouterOperation(ope);

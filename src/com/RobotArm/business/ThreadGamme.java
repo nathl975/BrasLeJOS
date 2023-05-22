@@ -1,6 +1,7 @@
  package com.RobotArm.business;
 
  import com.RobotArm.interfaces.IExecuteur;
+ import lejos.utility.Delay;
 
  import java.util.concurrent.ExecutorService;
  import java.util.concurrent.Executors;
@@ -16,6 +17,7 @@
 	public IExecuteur executeur;
 	private final ExecutorService execService;
 	private Future execThread;
+	private final BrasArticule brasArticule;
 	private boolean stopper;
 	private Gamme gammeEnExec;
 	
@@ -23,10 +25,11 @@
 	 * Constructeur de la classe
 	 * @param executeur exécuteur à utiliser pout lancer la game
 	 */
-	public ThreadGamme(IExecuteur executeur) {
+	public ThreadGamme(IExecuteur executeur, BrasArticule brasArticule) {
 		this.executeur = executeur;
 		this.execService = Executors.newSingleThreadExecutor();
 		stopper = false;
+		this.brasArticule = brasArticule;
 	}
 
 	/**
@@ -48,24 +51,66 @@
 						// proprement et sans perte de mémoire ou de contrôleur du thread
 						if(stopper)
 							throw new InterruptedException();
-						t.executer();
+						executerTache(t);
 					}
 				}
 			}
 			catch (Exception e)
 			{
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 			stopper = true;
 			ThreadGamme.this.notifierObservateur();
 		});
+	}
+
+	private void executerTache(Tache tache) {
+		switch (tache.getTypeAction()) {
+			case Attendre:
+				Delay.msDelay(2000);
+				break;
+			case TournerGauche:
+				this.brasArticule.moteurTurn.tourner(-90);
+				this.brasArticule.moteurTurn.stop();
+				break;
+			case TournerDroite:
+				this.brasArticule.moteurTurn.tourner(90);
+				this.brasArticule.moteurTurn.stop();
+				break;
+			case Attraper:
+				this.brasArticule.moteurGrab.tourner(-45);
+				this.brasArticule.moteurGrab.stop();
+
+				this.brasArticule.moteurLift.tourner(-120);
+				this.brasArticule.moteurLift.stop();
+
+				this.brasArticule.moteurGrab.tourner(45);
+				this.brasArticule.moteurGrab.stop();
+
+				this.brasArticule.moteurLift.tourner(120);
+				this.brasArticule.moteurLift.stop();
+				break;
+			case Poser:
+				this.brasArticule.moteurLift.tourner(-120);
+				this.brasArticule.moteurLift.stop();
+
+				this.brasArticule.moteurGrab.tourner(45);
+				this.brasArticule.moteurGrab.stop();
+
+				this.brasArticule.moteurLift.tourner(120);
+				this.brasArticule.moteurLift.stop();
+
+				this.brasArticule.moteurGrab.tourner(-45);
+				this.brasArticule.moteurGrab.stop();
+				break;
+		}
 	}
 	
 	/**
 	 * Appelée lors de la fin d'une gamme
 	 */
 	private void notifierObservateur() {
-		System.out.println("Gamme terminee");
+		System.out.println("Gamme terminée");
 		this.executeur.notifierFinGamme();
 	}
 
@@ -90,7 +135,7 @@
 	public void panne()
 	{
 		stopper = true;
-		Moteur.stopAll();		
+		this.brasArticule.stopAllMoteurs();
 	}
 	
 	/**

@@ -1,13 +1,12 @@
 package com.RobotArm.controller;
 
+import com.RobotArm.business.BrasArticule;
 import com.RobotArm.business.Gamme;
-import com.RobotArm.business.Moteur;
 import com.RobotArm.business.ThreadGamme;
 import com.RobotArm.business.Utilisateur;
 import com.RobotArm.exception.GammeNotFoundException;
 import com.RobotArm.exception.UnableToReadGammesException;
 import com.RobotArm.interfaces.*;
-import com.RobotArm.jsonAdapters.JsonAdapter;
 import com.google.gson.*;
 
 import java.util.ArrayList;
@@ -21,30 +20,41 @@ import java.util.Objects;
  * @author Alvin
  */
 public class Controller implements IExecuteur, IPilote {
-    private final Gamme gammeDefaut;
-    private Utilisateur utilisateurConnecte;
     private final IPersistance persistance;
+
     private IEtatMode modeFonctionnement;
+
     private final IPilotage pilotage;
-    private ThreadGamme execGammeService;
-    private final Gson gson;
-    boolean stop;
+
     private final IAdapter<Gamme> adapter;
+
+    private final BrasArticule brasArticule;
+
+    private final Gamme gammeDefaut;
+
+    private Utilisateur utilisateurConnecte;
+
+    private ThreadGamme execGammeService;
+
+    private final Gson gson;
+
+    boolean stop = false;
 
     /**
      * Constructeur de la classe
      */
-    public Controller(IPersistance pe, IPilotage pi) throws UnableToReadGammesException {
-        this.persistance = pe;
-        this.pilotage = pi;
-        this.gammeDefaut = this.persistance.recupererGammeDefaut();
+    public Controller(IPersistance persistance, IPilotage pilotage, IAdapter<Gamme> adapter, BrasArticule brasArticule) throws UnableToReadGammesException {
+        this.persistance = persistance;
         this.modeFonctionnement = new ModeManuel();
-        this.execGammeService = new ThreadGamme(this);
+        this.pilotage = pilotage;
+        this.adapter = adapter;
+        this.brasArticule = brasArticule;
+        this.gammeDefaut = this.persistance.recupererGammeDefaut();
+        this.execGammeService = new ThreadGamme(this, this.brasArticule);
         this.gson = (new GsonBuilder()).create();
-        this.stop = false;
-        this.adapter = new JsonAdapter<>();
 
-        initRobot();
+        // on initialise la position du robot au début du programme
+        this.brasArticule.resetPositionMoteurs();
     }
 
     /**
@@ -63,35 +73,6 @@ public class Controller implements IExecuteur, IPilote {
     }
 
     /**
-     * Initialise la position des moteurs
-     */
-    private void initRobot() {
-        initPositionMoteurs();
-    }
-
-
-    /**
-     * Positionne tous les moteurs en butée.
-     */
-    private void initPositionMoteurs() {
-        try {
-            Objects.requireNonNull(Moteur.getInstance('A')).tourner(360);
-            Objects.requireNonNull(Moteur.getInstance('A')).stop();
-            System.out.println("Moteur A fini");
-
-            Objects.requireNonNull(Moteur.getInstance('B')).tourner(360);
-            Objects.requireNonNull(Moteur.getInstance('B')).stop();
-            System.out.println("Moteur B fini");
-
-            Objects.requireNonNull(Moteur.getInstance('C')).tourner(360);
-            Objects.requireNonNull(Moteur.getInstance('C')).stop();
-            System.out.println("Moteur C fini");
-        } catch (NullPointerException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    /**
      * Sauvegarde un log
      *
      * @param r le rapport à sauvegarder
@@ -106,6 +87,7 @@ public class Controller implements IExecuteur, IPilote {
      * @param id ID de la gamme à exécuter
      */
     public void executeGamme(String id) {
+        System.out.println(this.modeFonctionnement.peutExecuter());
         if (this.modeFonctionnement.peutExecuter()) {
             if (!gammeEnCours()) {
                 Gamme gamme = null;
@@ -129,7 +111,7 @@ public class Controller implements IExecuteur, IPilote {
     public void notifierFinGamme() {
         pilotage.envoyerMessage("Gamme terminée !");
 
-        this.initPositionMoteurs();
+        this.brasArticule.resetPositionMoteurs();
     }
 
     /**
@@ -232,7 +214,7 @@ public class Controller implements IExecuteur, IPilote {
                     }
                     throw new Exception("Informations invalides");
                 } catch (Exception e) {
-                    this.pilotage.envoyerMessage("La gamme n'a pas pu etre modifiee.");
+                    this.pilotage.envoyerMessage("La gamme n'a pas pu être modifiée.");
                     sauverRapport(e.getMessage());
                 }
                 break;
@@ -250,7 +232,7 @@ public class Controller implements IExecuteur, IPilote {
                     throw new Exception("Informations invalides");
                 } catch (Exception e) {
 
-                    this.pilotage.envoyerMessage("La gamme n'a pas pu etre supprimee.");
+                    this.pilotage.envoyerMessage("La gamme n'a pas pu être supprimée.");
                     sauverRapport(e.getMessage());
                 }
                 break;
@@ -284,7 +266,7 @@ public class Controller implements IExecuteur, IPilote {
                     break;
                 }
                 if (this.modeFonctionnement.getClass().equals(ModePanne.class))
-                    this.execGammeService = new ThreadGamme(this);
+                    this.execGammeService = new ThreadGamme(this, this.brasArticule);
                 this.modeFonctionnement = new ModeAutonome();
                 // this.executeGamme(this.gammeDefaut.getId());
                 this.execGammeService.executer(gammeDefaut);
@@ -295,7 +277,7 @@ public class Controller implements IExecuteur, IPilote {
                     break;
                 }
                 if (this.modeFonctionnement.getClass().equals(ModePanne.class))
-                    this.execGammeService = new ThreadGamme(this);
+                    this.execGammeService = new ThreadGamme(this, this.brasArticule);
                 this.modeFonctionnement = new ModeManuel();
                 break;
             case "panne":
@@ -303,7 +285,7 @@ public class Controller implements IExecuteur, IPilote {
                     System.out.println("Non connecté");
                     break;
                 }
-                declencherPanne();
+                triggerPanne();
                 break;
             case "execG":
                 if (utilisateurConnecte == null) {
@@ -336,7 +318,7 @@ public class Controller implements IExecuteur, IPilote {
     }
 
 
-    public void declencherPanne() {
+    public void triggerPanne() {
         this.modeFonctionnement = new ModePanne();
         this.execGammeService.panne();
         System.out.println("Mode panne actif.");
