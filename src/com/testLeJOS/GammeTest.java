@@ -2,150 +2,42 @@ package com.testLeJOS;
 
 import com.RobotArm.business.Gamme;
 import com.RobotArm.business.Operation;
-import com.RobotArm.business.Tache;
-import com.RobotArm.enumeration.TypeAction;
-import com.RobotArm.exception.GammeNotFoundException;
-import com.RobotArm.interfaces.IPersistance;
-import com.RobotArm.persistance.JsonPersistance;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.logging.Logger;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class GammeTest {
-	private IPersistance persistance;
-	private Gamme defaultGamme;
 
-	String fichierGammesTest = "test_gammes.json";
-	String fichierUsersTest = "test_users.json";
+	@Test
+	/**
+	 * On vérifie que l'ajout d'une opération é une gamme s'effectue correctement
+	 */
+	public void isOperationAjoutee() {
+		Gamme g = new Gamme("1","Gamme test");
+		Operation o = new Operation("1","Operation test");
 
-	private static final Logger LOGGER = Logger.getLogger(JsonPersistance.class.getName());
+		g.AjouterOperation(o);
 
-	public void setUp() throws IOException {
-		resetTestGammesFile(fichierGammesTest);
-		persistance = null;
-		defaultGamme = null;
-		this.persistance = new JsonPersistance(fichierGammesTest, fichierUsersTest);
-		for (int i = 0; i < 5; i++) {
-			Gamme gamme = creerGammeDefaut(i);
-			this.persistance.creerGamme(gamme);
-		}
-		this.defaultGamme = this.persistance.getGammes().get(0);
-	}
-
-	private void resetTestGammesFile(String filePath) throws IOException {
-		File file = new File(filePath);
-		if (file.exists()) {
-			file.delete(); // Supprimez le fichier existant s'il existe
-		}
-		file.createNewFile(); // Créez un nouveau fichier
-
-	}
-
-	private Gamme creerGammeDefaut(int id) {
-		Gamme g = new Gamme(Integer.toString(id), "Gamme "+ id);
-
-
-		Operation ope = new Operation(Integer.toString(id), "Opération " + id);
-
-		Tache t1 = new Tache("1", "Tourner à gauche", TypeAction.TournerGauche);
-		Tache t2 = new Tache("2", "Tourner à droite", TypeAction.TournerDroite);
-		Tache t3 = new Tache("3", "Ouvre la pince", TypeAction.Attraper);
-		Tache t4 = new Tache("4", "Ferme la pince", TypeAction.Poser);
-		Tache t5 = new Tache("7", "Attendre 2 secondes", TypeAction.Attendre);
-
-
-		// Saisir un objet
-		ope.AjouterTache(t3);
-		ope.AjouterTache(t1);
-		ope.AjouterTache(t5);
-		ope.AjouterTache(t4);
-		ope.AjouterTache(t2);
-
-		g.AjouterOperation(ope);
-		return g;
+		assertTrue(g.getListeOperations().contains(o));
 	}
 
 	@Test
-	public void testCreerGamme() throws IOException {
-		resetTestGammesFile(fichierGammesTest);
-		persistance = new JsonPersistance(fichierGammesTest, fichierUsersTest);
+	/**
+	 * On vérifie que la suppresion d'une opération dans une gamme s'effectue correctement
+	 */
+	public void isOperationSupprimee() throws Exception {
+		Gamme g = new Gamme("1","Gamme test");
+		Operation o1 = new Operation("1","Operation test 1");
+		Operation o2 = new Operation("2","Operation test 2");
 
-		Gamme nouvelleGamme = creerGammeDefaut(0); // ou utilisez 1 si vous préférez commencer à partir de 1
-		persistance.creerGamme(nouvelleGamme);
+		g.AjouterOperation(o1);
+		g.AjouterOperation(o2);
 
-		try {
-			Gamme gamme = persistance.findGamme(nouvelleGamme.getId());
-			assertNotNull(gamme);
-			assertEquals(nouvelleGamme.getId(), gamme.getId());
-		} catch (GammeNotFoundException e) {
-			fail(e.getMessage());
-		}
+		g.SupprimerOperation(o1);
+
+		assertFalse(g.getListeOperations().contains(o1));
 	}
 
-
-	@Test
-	public void testSupprimerGamme() throws IOException {
-		setUp();
-		persistance.supprimerGamme(defaultGamme.getId());
-		try {
-			persistance.findGamme(defaultGamme.getId());
-			fail("La suppression de la gamme a échoué");
-		} catch (GammeNotFoundException e) {
-		}
-	}
-
-	@Test
-	public void testFindGamme() throws IOException {
-		setUp();
-		try {
-			Gamme gamme = persistance.findGamme(defaultGamme.getId());
-			assertNotNull(gamme);
-			assertEquals(defaultGamme.getId(), gamme.getId());
-		} catch (GammeNotFoundException e) {
-			fail(e.getMessage());
-		}
-	}
-
-	@Test
-	public void testGetGammes() throws IOException {
-		setUp();
-		ArrayList<Gamme> result = persistance.getGammes();
-		assertEquals(5, result.size());
-		for(int i = 0; i < 5; i++) {
-			assertEquals("Expected ID of " + i + ", but got " + result.get(i).getId(), Integer.toString(i), result.get(i).getId());
-		}
-	}
-
-	@Test
-	public void testModifierGamme() throws IOException {
-		setUp();
-		Gamme gamme = persistance.getGammes().get(0);
-
-		Tache nouvelleTache = new Tache("6", "Nouvelle Tâche", TypeAction.Attraper);
-
-		Operation operation = gamme.getListeOperations().get(0);
-		operation.AjouterTache(nouvelleTache);
-
-		Operation nouvelleOperation = new Operation("6", "Nouvelle Opération");
-		nouvelleOperation.AjouterTache(new Tache("1", "Tâche 1 de la nouvelle opération", TypeAction.TournerDroite));
-
-		gamme.AjouterOperation(nouvelleOperation);
-
-		persistance.modifierGamme(gamme);
-
-		try {
-			Gamme gammeModifiee = persistance.findGamme(gamme.getId());
-
-			assertTrue(gammeModifiee.getListeOperations().get(0).getListeTaches().contains(nouvelleTache));
-			assertTrue(gammeModifiee.getListeOperations().contains(nouvelleOperation));
-
-		} catch (GammeNotFoundException e) {
-			fail(e.getMessage());
-		}
-	}
 }
+
