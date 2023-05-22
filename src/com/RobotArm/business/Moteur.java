@@ -120,20 +120,6 @@ public class Moteur {
     }
 
     /**
-     * Arrête immédiatement tous les moteurs
-     */
-    public static void stopAll() {
-        Motor.A.stop();
-        Motor.B.stop();
-        Motor.C.stop();
-        Motor.D.stop();
-        if (A != null) A.stop();
-        if (B != null) B.stop();
-        if (C != null) C.stop();
-        if (D != null) D.stop();
-    }
-
-    /**
      * Permet de faire tourner un moteur sur un angle
      *
      * @param degres Angle de rotation

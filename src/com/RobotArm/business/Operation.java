@@ -13,11 +13,6 @@
    private String description;
    ArrayList<Tache> listeTaches;
    
-   public Operation() {
-     this.listeTaches = new ArrayList<>();
-   }
- 
-   
    public Operation(String id, String description) {
      this.id = id;
      this.description = description;
@@ -35,16 +30,7 @@
    public void SupprimerTache(Tache t) {
      this.listeTaches.remove(t);
    }
- 
- 
-   
-   public void executer() {
-     for (Tache t : this.listeTaches)
-     {
-       t.executer();
-     }
-   }
- 
+
    
    public String getId() {
      return this.id;
@@ -69,6 +55,7 @@
    public ArrayList<Tache> getListeTaches() {
      return this.listeTaches;
    }
+
    public void setListeTaches(ArrayList<Tache> listeTaches) {
      this.listeTaches = listeTaches;
    }

@@ -1,8 +1,9 @@
 package com.testLeJOS;
 
-import com.RobotArm.business.Tache;
 import com.RobotArm.business.Gamme;
 import com.RobotArm.business.Operation;
+import com.RobotArm.business.Tache;
+import com.RobotArm.enumeration.TypeAction;
 import com.RobotArm.exception.GammeNotFoundException;
 import com.RobotArm.interfaces.IPersistance;
 import com.RobotArm.persistance.JsonPersistance;
@@ -51,25 +52,18 @@ public class GammeTest {
 
 		Operation ope = new Operation(Integer.toString(id), "Opération " + id);
 
-		Tache t1 = new Tache("1", "Tourner à gauche", -90);
-		Tache t2 = new Tache("2", "Tourner à droite", 90);
-		Tache t3 = new Tache("3", "Ouvre la pince", -180);
-		Tache t4 = new Tache("4", "Ferme la pince", 180);
-		Tache t5 = new Tache("5", "Baisse le bras", -120);
-		Tache t6 = new Tache("6", "Monter le bras", 120);
-		Tache t7 = new Tache("7", "Attendre 1 secondes", 1000);
+		Tache t1 = new Tache("1", "Tourner à gauche", TypeAction.TournerGauche);
+		Tache t2 = new Tache("2", "Tourner à droite", TypeAction.TournerDroite);
+		Tache t3 = new Tache("3", "Ouvre la pince", TypeAction.Attraper);
+		Tache t4 = new Tache("4", "Ferme la pince", TypeAction.Poser);
+		Tache t5 = new Tache("7", "Attendre 2 secondes", TypeAction.Attendre);
+
 
 		// Saisir un objet
 		ope.AjouterTache(t3);
-		ope.AjouterTache(t5);
-		ope.AjouterTache(t4);
-		ope.AjouterTache(t6);
 		ope.AjouterTache(t1);
 		ope.AjouterTache(t5);
-		ope.AjouterTache(t3);
-		ope.AjouterTache(t6);
 		ope.AjouterTache(t4);
-		ope.AjouterTache(t7);
 		ope.AjouterTache(t2);
 
 		g.AjouterOperation(ope);
@@ -132,13 +126,13 @@ public class GammeTest {
 		setUp();
 		Gamme gamme = persistance.getGammes().get(0);
 
-		Tache nouvelleTache = new Tache("6", "Nouvelle Tâche", 500);
+		Tache nouvelleTache = new Tache("6", "Nouvelle Tâche", TypeAction.Attraper);
 
 		Operation operation = gamme.getListeOperations().get(0);
 		operation.AjouterTache(nouvelleTache);
 
 		Operation nouvelleOperation = new Operation("6", "Nouvelle Opération");
-		nouvelleOperation.AjouterTache(new Tache("1", "Tâche 1 de la nouvelle opération", 200));
+		nouvelleOperation.AjouterTache(new Tache("1", "Tâche 1 de la nouvelle opération", TypeAction.TournerDroite));
 
 		gamme.AjouterOperation(nouvelleOperation);
 
@@ -154,7 +148,4 @@ public class GammeTest {
 			fail(e.getMessage());
 		}
 	}
-
-
-
 }
