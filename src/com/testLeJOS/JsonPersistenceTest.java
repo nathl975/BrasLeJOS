@@ -80,7 +80,7 @@ public class JsonPersistenceTest {	private IPersistance persistance;
         resetTestGammesFile(fichierGammesTest);
         persistance = new JsonPersistance(fichierGammesTest, fichierUsersTest);
 
-        Gamme nouvelleGamme = creerGammeDefaut(0); // ou utilisez 1 si vous préférez commencer à partir de 1
+        Gamme nouvelleGamme = creerGammeDefaut(0); 
         persistance.creerGamme(nouvelleGamme);
 
         try {
